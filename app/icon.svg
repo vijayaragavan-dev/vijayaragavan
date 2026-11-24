@@ -1,0 +1,33 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  role="img"
+  aria-label="Vijayaragavan"
+>
+  <defs>
+    <linearGradient id="vj-mark" x1="14" y1="22" x2="50" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34E0A1" />
+      <stop offset="1" stop-color="#8B7CFF" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="#07090D" />
+  <rect x="1" y="1" width="62" height="62" rx="14" fill="none" stroke="#34E0A1" stroke-opacity="0.22" />
+  <path
+    d="M13 24 21 40 29 24"
+    fill="none"
+    stroke="url(#vj-mark)"
+    stroke-width="3.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M45 24v11a7 7 0 0 1-14 0"
+    fill="none"
+    stroke="url(#vj-mark)"
+    stroke-width="3.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

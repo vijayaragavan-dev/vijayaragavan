@@ -1,0 +1,189 @@
+VIJAYARAGAVAN — 3D PORTFOLIO REBUILD REPORT
+==========================================
+Updated: 2026-11-24
+Status: REBUILD VERIFIED — production build passes; sections 6 and 7 record
+        the accessibility/reduced-motion work and the skills-panel upgrade.
+
+1. PROJECT DISCOVERY
+--------------------
+Framework      : Next.js 16.4.6 (App Router), React 19.3.1, TypeScript 5.9.3
+Styling        : Tailwind CSS 4.3.5, custom design tokens in app/globals.css
+3D             : three 0.187.0, @react-three/fiber 9.8.2, @react-three/drei 10.7.9
+Motion         : framer-motion 12.38.0, lenis 1.3.27
+UI primitives  : @radix-ui/react-dialog, lucide-react
+Fonts          : Space Grotesk (display), Inter (body), JetBrains Mono (labels)
+
+Page structure : Hero -> About -> Skills -> Projects -> Coding Profiles ->
+                 Achievements -> Contact, with Navbar, Footer, ScrollProgress,
+                 SmoothScroll, CustomCursor and ToastProvider in the layout.
+
+Primary data   : data/profile.ts, data/links.ts, data/skills.ts,
+                 data/projects.ts, data/stats.ts.
+Assets         : profile.jpeg (actual portrait used by the site).
+Reference      : references/VJ Cyber Portfolio Design System.png (12-view board)
+                 references/Vijayaragavan — 3D Portfolio Visual Blueprint.html
+Known inputs   : resume.pdf present, public/profile.jpeg present.
+
+2. REFERENCE ANALYSIS
+---------------------
+Required visual language:
+- Near-black background #07090D with layered radial emerald/violet glows,
+  fine blueprint grid, film grain and generous negative space.
+- Emerald #34E0A1 primary, violet #8B7CFF secondary, text #EEF1F6,
+  muted #8E9BB0, panel #101820.
+- Glass panels with 1px luminous borders, inset highlight and deep shadows.
+- Hero: portrait inside layered offset glass frames with orbital rings,
+  floating tech chips, small availability status, two role pills, two CTAs.
+- Skills: central glowing "VJ" core connected to seven labelled skill nodes,
+  interactive, with list fallback.
+- Projects: horizontal cinematic coverflow with visible depth, distinct
+  artwork per project, category filters, details dialog.
+- Dense, restrained mono labels; section indices; consistent 8px-ish spacing.
+
+3. AUDIT FINDINGS
+-----------------
+3.1 Critical
+- Tailwind v4 token collision: --color-base (#07090d) made the `text-base`
+  font-size utility emit `color: var(--color-base)`. The hero description
+  computed to rgb(7, 9, 13) at >=640px and was effectively invisible.
+  Resolution: rename base color tokens to --color-abyss / --color-abyss-2.
+- Hydration mismatch: framer-motion useReducedMotion() returns null on the
+  server and a boolean on the client, producing different `initial` props
+  and `style` objects. Resolution: deterministic motion props.
+- Skills constellation nearly disappeared: dark materials at low emissive
+  intensity, small geometry, weak lights and dense label/edge overlap.
+- Projects coverflow: active card overflowed its 540-580px stage, side cards
+  were clipped off-screen, and covers were generic gradients with no artwork.
+
+3.2 Design system
+- Emerald and violet were teal/pastel (#2dd4bf, #a78bfa), not the reference
+  #34E0A1 / #8B7CFF. Muted text was slightly light (#95a5af vs #8E9BB0).
+- Section padding was excessive (5-8.5rem), producing large empty gaps.
+- Nav lacked Profiles, Achievements and Resume entry; SECTION_IDS omitted
+  achievements, so active-section tracking was incomplete.
+- About quick facts omitted academic year and internship availability.
+- Achievements displayed four em-dashes; project/technology totals are
+  derivable from repository data and were left null.
+
+3.3 Honesty / data
+- No invented metrics. Projects (10) and technologies (37 unique skill
+  entries) can be verified from data/projects.ts and data/skills.ts.
+- Problems solved and certifications remain unverified and stay em-dash.
+- LinkedIn URL is present in data/links.ts but not independently confirmed;
+  it is not fabricated by this audit.
+- Resume PDF exists and is served from /resume.pdf.
+
+4. IMPLEMENTATION PLAN
+----------------------
+Phase 1: Fix tokens, text-base collision, palette, spacing, typography.
+Phase 2: Hero: restore description, static role line + role badges,
+         layered glass portrait frame, orbital rings, brighter 3D field.
+Phase 3: Skills: rebuild constellation (emissive nodes, glass core,
+         readable labels, camera framing, lines, keyboard/list fallback).
+Phase 4: Projects: rebuild coverflow geometry; add ten distinct SVG artworks;
+         filter labels, modal artwork, mobile snap cards.
+Phase 5: Navigation, About, Achievements, Resume and Footer alignment.
+Phase 6: Hydration, accessibility, reduced-motion and performance verification.
+Phase 7: Run typecheck, lint, build; screenshot desktop and mobile; finalize.
+
+5. VERIFICATION LOG
+-------------------
+- npm run dev: running at http://localhost:3000; page returns 200.
+- Console warnings observed before fixes: hydration attribute mismatch,
+  reduced-motion framer warning, deprecated THREE.Clock, Next Image LCP.
+- Existing screenshots archived under .audit/.
+- npm run build passes after every change set (10 static routes).
+- Remaining console output in production: benign THREE.Clock deprecation
+  and a profile.jpeg preload hint. Development adds Lenis container
+  position and framer-motion reduced-motion notices.
+
+6. REDUCED-MOTION AND ACCESSIBILITY VERIFICATION
+-------------------------------------------------
+- Root cause of the "3D is missing" report: lib/device-capabilities.ts
+  mapped prefers-reduced-motion to tier "no-3d", which disabled both WebGL
+  scenes and forced the Skills list fallback even though WebGL was
+  available. Resolution: reduced motion no longer downgrades the tier; it
+  only freezes continuous animation.
+- components/sections/Skills.tsx no longer forces list view on reduced
+  motion. The constellation stays available and LIST remains a user choice.
+- SkillConstellation, ParticleField and HeroScene read
+  prefersReducedMotion() inside useFrame and early-return, so orbits,
+  spins, bobbing and time-driven uniforms stop, while user-initiated drag
+  and pointer tilt keep working.
+- Verified with Chrome DevTools emulation prefers-reduced-motion: reduce —
+  skills canvas mounts and renders, no fallback message, and a hovered
+  technology tile reports transform: none with transition-duration 0s while
+  its backing plate keeps the static translateZ(-16px) thickness.
+- Lighthouse (desktop, production build): Accessibility 100,
+  Best Practices 100, SEO 100. The only remaining audit item is the
+  experimental agent-accessibility-tree check (score 50) on
+  aside#skills-panel, which is not a shipped metric.
+
+7. SKILLS PANEL — 3D TECHNOLOGY ICON ENHANCEMENT
+-------------------------------------------------
+Scope: the right-hand detail panel (aside#skills-panel) only. The 3D
+constellation, tab strip, 3D/LIST toggle, list fallback, panel header and
+footer, and every other section are unchanged.
+
+Data and brand sources
+- lib/tech-icons.ts (new): 16 brand marks vendored from
+  simple-icons@16.38.1 (CC0-1.0), so only the paths actually used ship in
+  the bundle. The Oracle wordmark is vendored from Wikimedia Commons
+  (Oracle_logo.svg) because simple-icons no longer carries an Oracle mark.
+  Java maps to the OpenJDK coffee cup; its black vendor hex is overridden
+  to the Java brand orange-red #E76F00 so it stays visible on the dark
+  panel. Python carries its official two-tone gradient (#3776AB -> #FFD43B).
+- data/skills.ts: every skill gained a required, stable `icon` identifier.
+  Names, learning flags, group order and the 37-skill total are untouched,
+  so counts, the achievements section and the constellation are unaffected.
+
+Components
+- components/ui/TechIcon.tsx (new): resolves an icon id to a brand SVG
+  (with accessible name) or, for concepts that have no single official
+  logo (REST APIs, data structures, OOP, RAG ...), to a lucide line icon
+  matching the rest of the UI. Brand colours darker than a 3.2:1 contrast
+  ratio against the tile are lifted towards white in small steps so marks
+  stay legible without losing hue (NumPy #013243 -> #4e707c,
+  pandas #150458 -> #71679b, CSS #663399 -> lighter violet). An unknown id
+  falls back to the skill's initial.
+- components/ui/SkillTechnologyCard.tsx (new): CSS-3D glass tile — backing
+  plate at translateZ(-16px), glass face with inset highlight, icon plate
+  raised to translateZ(18px), top-left sheen, mono label, and the existing
+  learning progress-ring flag. Hover lifts and tilts the face with a
+  brand-tinted glow (--tech-brand from the mark's hex); :active presses the
+  tile. All transform feedback is disabled under prefers-reduced-motion
+  while the static depth is preserved.
+- components/sections/Skills.tsx: the panel's chip list was replaced by a
+  three-column `.tech-grid` of tiles (3 columns at every width). The
+  list-view fallback still renders the original SkillChip pills.
+- app/globals.css: scoped `.tech-*` rules only, plus reduced-motion
+  overrides appended to the existing prefers-reduced-motion block.
+
+Verification
+- All seven groups exercised in the browser: Programming (5), Frontend (3),
+  Backend (3, Spring Boot learning flag), Database (5, Oracle wordmark
+  strip), CS Fundamentals (9 tiles / 3 rows, fits the 620px panel),
+  AI/ML (4, three learning flags), Generative & Agentic AI (8).
+- Widths: 390px (3 x 97px tiles), 768px (3 x 214px), 1440px (3 x 104px);
+  document scrollWidth equals viewport width at each size, so no horizontal
+  overflow and no panel overflow at any group size.
+- Hover: face reports a matrix3d tilt with a brand-coloured border and the
+  depth plate moves from -16px to -4px.
+- Keyboard: ArrowRight on the tablist moves focus and selection and updates
+  the polite live region; LIST toggle still shows all 37 chips in 7 groups.
+- Console: no errors and no new warnings.
+- npm run typecheck, npm run lint and npm run build all pass.
+
+Honest defects and limitations
+- simple-icons ships no Oracle mark, so the wordmark is vendored from
+  Wikimedia Commons and renders as a full-width strip (about 10px tall)
+  because of its 7.7:1 aspect ratio.
+- NumPy, pandas, CSS and C++ brand colours are automatically lightened for
+  contrast on the dark tile, so they read lighter than the official hex.
+- Concept skills use line icons rather than official logos because no
+  single official mark exists for them.
+- Groups with only 3-5 skills leave empty space below the grid, since the
+  stage height (620px on lg) drives the panel height.
+- simple-icons is a devDependency only and is never imported by app code;
+  the brand paths are vendored into lib/tech-icons.ts. Regenerate that file
+  with `npm run icons:generate` after bumping the simple-icons version.
