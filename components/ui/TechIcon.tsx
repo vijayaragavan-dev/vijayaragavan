@@ -128,20 +128,35 @@ function brandFor(iconId: string) {
   return brandIcons[brandAlias[iconId] ?? iconId];
 }
 
-/** Brand accent used for the tile's hover glow, or null for concept marks. */
+/** Brand accent used for the object's light, or null for concept marks. */
 export function techBrandColor(iconId: string): string | null {
   const brand = brandFor(iconId);
   if (!brand) return null;
   return readableBrandHex(brand.gradient ? brand.gradient[0] : brand.hex);
 }
 
+/** Wordmarks such as Oracle need a wider object than square marks. */
+export function techMarkIsWide(iconId: string): boolean {
+  return Boolean(brandFor(iconId)?.wide);
+}
+
 type TechIconProps = {
   iconId: string;
   name: string;
   className?: string;
+  /** Render only the mark, without the glass tile frame. */
+  bare?: boolean;
+  /** Hide the mark from assistive tech when the parent already names it. */
+  decorative?: boolean;
 };
 
-export default function TechIcon({ iconId, name, className }: TechIconProps) {
+export default function TechIcon({
+  iconId,
+  name,
+  className,
+  bare = false,
+  decorative = false,
+}: TechIconProps) {
   const brand = brandFor(iconId);
   const ConceptIcon = conceptIcons[iconId];
 
@@ -151,6 +166,30 @@ export default function TechIcon({ iconId, name, className }: TechIconProps) {
       ? brand.gradient.map((hex) => readableBrandHex(hex))
       : [readableBrandHex(brand.hex)];
     const fill = brand.gradient ? `url(#${gradientId})` : stops[0];
+    const a11y = decorative
+      ? ({ "aria-hidden": true } as const)
+      : ({ role: "img", "aria-label": `${brand.title} logo` } as const);
+
+    const svg = (
+      <svg
+        className={bare ? className : "tech-icon-svg"}
+        viewBox={brand.viewBox ?? "0 0 24 24"}
+        {...a11y}
+        focusable="false"
+      >
+        {brand.gradient && (
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor={stops[0]} />
+              <stop offset="100%" stopColor={stops[1]} />
+            </linearGradient>
+          </defs>
+        )}
+        <path d={brand.path} fill={fill} />
+      </svg>
+    );
+
+    if (bare) return svg;
 
     return (
       <span
@@ -160,36 +199,36 @@ export default function TechIcon({ iconId, name, className }: TechIconProps) {
           className,
         )}
       >
-        <svg
-          className="tech-icon-svg"
-          viewBox={brand.viewBox ?? "0 0 24 24"}
-          role="img"
-          aria-label={`${brand.title} logo`}
-          focusable="false"
-        >
-          {brand.gradient && (
-            <defs>
-              <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor={stops[0]} />
-                <stop offset="100%" stopColor={stops[1]} />
-              </linearGradient>
-            </defs>
-          )}
-          <path d={brand.path} fill={fill} />
-        </svg>
+        {svg}
       </span>
     );
   }
 
   if (ConceptIcon) {
+    const a11y = decorative
+      ? ({ "aria-hidden": true } as const)
+      : ({ role: "img", "aria-label": `${name} icon` } as const);
+
+    const glyph = (
+      <ConceptIcon
+        className={bare ? className : "tech-icon-glyph"}
+        strokeWidth={1.6}
+        {...a11y}
+        focusable="false"
+      />
+    );
+
+    if (bare) return glyph;
+
     return (
-      <span className={cn("tech-icon-frame", className)}>
-        <ConceptIcon
-          className="tech-icon-glyph"
-          strokeWidth={1.6}
-          aria-hidden="true"
-          focusable="false"
-        />
+      <span className={cn("tech-icon-frame", className)}>{glyph}</span>
+    );
+  }
+
+  if (bare) {
+    return (
+      <span className={className} aria-hidden="true">
+        {name.charAt(0).toUpperCase()}
       </span>
     );
   }

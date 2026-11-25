@@ -6,7 +6,7 @@ import { List, Orbit } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SkillChip from "@/components/ui/SkillChip";
-import SkillTechnologyCard from "@/components/ui/SkillTechnologyCard";
+import TechUniverse from "@/components/ui/TechUniverse";
 import WebGLStage from "@/components/three/WebGLStage";
 import { useDeviceTier } from "@/hooks/useDeviceTier";
 import {
@@ -316,54 +316,39 @@ export default function Skills() {
                 <span className="chip">{selectedGroup.skills.length} skills</span>
               </div>
 
-              <div
-                key={selectedGroup.id}
-                className="mt-4 flex flex-1 flex-col"
-              >
-                  <h3 className="font-display text-2xl font-medium tracking-tight text-ink">
-                    {selectedGroup.label}
-                  </h3>
-                  <p className="mt-2 text-[13px] leading-relaxed text-muted">
-                    {groupNotes[selectedGroup.id]}
-                  </p>
+              <div className="mt-4 flex flex-1 flex-col">
+                <h3 className="font-display text-2xl font-medium tracking-tight text-ink">
+                  {selectedGroup.label}
+                </h3>
+                <p className="mt-2 text-[13px] leading-relaxed text-muted">
+                  {groupNotes[selectedGroup.id]}
+                </p>
 
-                  <ul
-                    className="tech-grid"
-                    aria-label={`${selectedGroup.label} skills`}
+                <TechUniverse group={selectedGroup} />
+
+                {learningSkills.length > 0 && (
+                  <p
+                    className={cn(
+                      "mt-3 flex items-center gap-1.5 font-mono text-[8.5px] uppercase tracking-[0.1em]",
+                      accent.text,
+                    )}
                   >
-                    {selectedGroup.skills.map((skill) => (
-                      <SkillTechnologyCard
-                        key={`${selectedGroup.id}-${skill.name}`}
-                        iconId={skill.icon}
-                        name={skill.name}
-                        learning={skill.learning}
-                      />
-                    ))}
-                  </ul>
+                    <span
+                      className={cn("h-1 w-1 rounded-full", accent.dot)}
+                      aria-hidden="true"
+                    />
+                    {learningSkills.length} learning · dashed orbit
+                  </p>
+                )}
 
-                  {learningSkills.length > 0 && (
-                    <p
-                      className={cn(
-                        "mt-5 rounded-xl border px-3 py-2.5 font-mono text-[9px] uppercase leading-relaxed tracking-[0.1em]",
-                        accent.border,
-                        accent.surface,
-                        accent.text,
-                      )}
-                    >
-                      {learningSkills.length} skill
-                      {learningSkills.length === 1 ? "" : "s"} currently being
-                      learned — marked with a progress ring.
-                    </p>
-                  )}
-
-                  <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/[0.07] pt-4">
-                    <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted/45">
-                      {selectedGroup.index} / 07
-                    </span>
-                    <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted/45">
-                      Keyboard: ← →
-                    </span>
-                  </div>
+                <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/[0.07] pt-4">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted/45">
+                    {selectedGroup.index} / 07
+                  </span>
+                  <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted/45">
+                    Keyboard: ← →
+                  </span>
+                </div>
               </div>
             </div>
           </div>

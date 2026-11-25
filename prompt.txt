@@ -1,0 +1,1318 @@
+# PROJECT: VIJAYARAGAVAN — CINEMATIC 3D DEVELOPER PORTFOLIO
+
+## MANDATORY PROJECT TRANSFORMATION — STRICT EXECUTION INSTRUCTIONS
+
+You are working on my existing personal developer portfolio project.
+
+Your responsibility is to analyze the existing implementation, understand all supplied design references, and transform the existing portfolio into a premium, cinematic, interactive 3D developer portfolio.
+
+This is a mandatory implementation task, not an optional design exercise.
+
+The final result MUST closely follow the visual quality, layout, atmosphere, interactions, and design direction of the reference visualization available in the project.
+
+Do not merely describe the changes.
+Do not only generate a design plan.
+Do not stop after inspecting the repository.
+Do not produce a static mockup instead of a working website.
+
+**You must implement, execute, test, inspect, refine, and document the actual website.**
+
+---
+
+# 1. PRIMARY OBJECTIVE
+
+Transform my existing portfolio into a visually impressive, professional, responsive, dark emerald-glassmorphism portfolio with cinematic 3D interactions.
+
+The target visual identity is:
+
+- Dark luxury.
+- Futuristic engineering aesthetics.
+- Emerald glassmorphism.
+- Soft violet secondary lighting.
+- Cinematic 3D depth.
+- Realistic glass materials.
+- Interactive 3D objects.
+- Premium typography.
+- Smooth transitions.
+- Professional project presentation.
+- Carefully designed mobile experience.
+
+The finished website should feel like a professionally designed digital product.
+
+The visual quality should be comparable to the supplied reference image.
+
+My portfolio must communicate that I am a Computer Science student and aspiring software developer interested in backend engineering, AI/ML, and building practical software solutions.
+
+The experience should impress both recruiters and developers without sacrificing readability, performance, or usability.
+
+## NON-NEGOTIABLE REQUIREMENT
+
+The supplied reference image is the PRIMARY VISUAL TARGET.
+
+You must actively inspect and use it throughout implementation.
+
+The final website should reproduce its major visual characteristics and composition, not merely use similar colors.
+
+---
+
+# 2. PROJECT FILE DISCOVERY — INSPECT EVERYTHING FIRST
+
+The project contains a `references` directory inside the root folder.
+
+It contains the design reference image, existing HTML reference, and potentially additional prompt or supporting files.
+
+There is also an existing `report.txt` file in the project root.
+
+Before writing or modifying code:
+
+### Step 1: Inspect the repository
+
+Identify:
+
+- Current framework.
+- Existing application architecture.
+- Existing source code.
+- Package manager.
+- Installed dependencies.
+- Existing pages and components.
+- Existing CSS and design system.
+- Existing assets.
+- Existing animations and interactions.
+- Existing deployment configuration.
+- Existing bugs and incomplete features.
+
+Do not assume the project is a fresh Next.js application.
+
+Understand the current implementation first.
+
+### Step 2: Inspect the references directory
+
+Find every relevant reference file.
+
+Specifically identify:
+
+1. The multi-view portfolio visualization image.
+2. The existing HTML portfolio blueprint.
+3. All supplied implementation prompts.
+4. The original profile photograph.
+5. Any additional portfolio-related documents or assets.
+
+Inspect the actual contents.
+
+Do not rely on filenames, assumptions, or previous descriptions alone.
+
+### Step 3: Analyze the visual reference
+
+The image contains 12 views:
+
+1. Complete Website Overview — Desktop.
+2. Hero Section — Cinematic 3D.
+3. Hero — Multi-Angle 3D Presentation.
+4. Skills — 3D Constellation.
+5. Skill Constellation — Multiple Angles.
+6. Projects — Cinematic 3D Coverflow.
+7. Project Gallery — Side and Isometric Views.
+8. About Section.
+9. Coding Profiles and Achievements.
+10. Contact and Resume.
+11. Mobile Responsive Design.
+12. Complete Design System.
+
+Inspect these views carefully.
+
+Understand the:
+
+- Overall composition.
+- Section dimensions.
+- Spacing.
+- Typography.
+- Color relationships.
+- Glass effects.
+- 3D geometry.
+- Lighting.
+- Camera angles.
+- Depth.
+- Card arrangement.
+- Navigation.
+- Responsive behavior.
+- Component hierarchy.
+
+Use the image as a continuous visual design specification.
+
+### Step 4: Analyze the existing HTML
+
+Determine:
+
+- What visual features already exist.
+- What interactions already work.
+- What is currently simulated rather than genuinely 3D.
+- What sections are missing.
+- What navigation is incorrect.
+- What responsiveness needs improvement.
+- What code should be reused conceptually.
+- What needs a proper React implementation.
+
+Preserve useful existing design decisions.
+
+Do not blindly discard the existing work.
+
+### Step 5: Produce an initial audit
+
+Before implementation, update `report.txt` with:
+
+- Project discovery summary.
+- Existing architecture.
+- Reference files discovered.
+- Design analysis.
+- Current implementation status.
+- Missing features.
+- Technical limitations.
+- Conflicting content or URLs.
+- Proposed architecture.
+- Implementation phases.
+
+After writing the initial audit, continue with implementation.
+
+**Do not wait for me to approve the audit unless you encounter a genuine blocker requiring information that only I can provide.**
+
+---
+
+# 3. REFERENCE PRIORITY AND DECISION RULES
+
+When references disagree, follow this hierarchy:
+
+1. The uploaded multi-view visualization image determines the desired visual appearance.
+2. The existing HTML determines the original design language and existing content.
+3. The supplied prompts determine the functional and technical requirements.
+4. Existing project source code determines what currently works and what needs migration.
+
+Do not allow a technical implementation decision to unnecessarily damage the visual target.
+
+Do not introduce a completely different theme.
+
+Do not replace the design with a generic developer portfolio.
+
+Do not remove distinctive elements simply because a simpler template is easier to implement.
+
+The goal is to recreate the visual experience as closely as practical while delivering a real, functional website.
+
+---
+
+# 4. DESIGN SYSTEM — PRESERVE THE REFERENCE
+
+## Color palette
+
+Use the following design tokens:
+
+```css
+--background: #07090D;
+--background-secondary: #0B1015;
+--emerald: #34E0A1;
+--violet: #8B7CFF;
+--text-primary: #EEF1F6;
+--text-secondary: #8E9BB0;
+```
+
+Glass surfaces:
+
+- White transparency around 4–8%.
+- Thin white borders around 10–14% opacity.
+- Subtle inner highlights.
+- Controlled backdrop blur.
+- Layered shadows.
+- Emerald ambient glow.
+- Occasional violet rim lighting.
+
+Avoid excessive gradients and neon effects.
+
+## Typography
+
+Use:
+
+- Space Grotesk for headings.
+- Inter for body text.
+- JetBrains Mono for technical labels.
+
+Use fluid typography and consistent spacing.
+
+## Visual language
+
+Use:
+
+- Rounded glass surfaces.
+- Thin illuminated borders.
+- Corner brackets.
+- Subtle engineering HUD labels.
+- Emerald light trails.
+- Floating particles.
+- Controlled reflections.
+- Premium card surfaces.
+- Consistent iconography.
+
+Every section must belong to the same design system.
+
+---
+
+# 5. TECHNICAL STACK — USE WHAT IS REQUIRED
+
+Preferred stack:
+
+- Next.js with App Router.
+- React.
+- TypeScript with strict mode.
+- Tailwind CSS.
+- Three.js.
+- React Three Fiber.
+- React Three Drei.
+- Framer Motion.
+- Lenis.
+- Lucide React.
+- Next Image.
+- Next Font.
+
+Use the existing framework if it can support the required result without unnecessary migration.
+
+Otherwise, migrate carefully.
+
+## Installation permission
+
+You are explicitly authorized to use the tools, packages, libraries, modules, and development utilities required to complete this project.
+
+If a required dependency or tool is unavailable:
+
+1. Identify the missing capability.
+2. Select an appropriate maintained package or tool.
+3. Install it using the project's existing package manager.
+4. Verify compatibility.
+5. Implement the feature.
+6. Document the dependency and reason in `report.txt`.
+
+You may install appropriate packages for:
+
+- 3D rendering.
+- Animation.
+- UI components.
+- Icons.
+- Image processing.
+- Performance monitoring.
+- Testing.
+- Accessibility.
+- Browser automation.
+- Screenshot capture.
+- Build and validation.
+
+You may use terminal commands, browser tools, development servers, package managers, and available coding tools.
+
+Do not artificially restrict implementation to already-installed dependencies.
+
+However:
+
+- Do not install unnecessary libraries.
+- Avoid abandoned packages.
+- Avoid duplicate functionality.
+- Do not introduce security vulnerabilities intentionally.
+- Do not expose secrets or API keys.
+- Do not overwrite important user files.
+- Do not execute destructive commands without first inspecting their consequences.
+
+If a tool is genuinely unavailable, find a suitable alternative and document the limitation.
+
+---
+
+# 6. WEBSITE STRUCTURE
+
+Build a continuous single-page portfolio with the following sections:
+
+1. Navigation.
+2. Hero.
+3. About.
+4. Skills.
+5. Projects.
+6. Coding Profiles.
+7. Achievements.
+8. Contact.
+9. Resume.
+10. Footer.
+
+The desktop overview should resemble View 01.
+
+The individual sections must also look excellent when viewed independently.
+
+---
+
+# 7. HERO — CINEMATIC 3D ENVIRONMENT
+
+This is one of the most important parts of the project.
+
+Recreate the visual direction of Views 02 and 03.
+
+## Hero layout
+
+Use a split layout:
+
+Left:
+- Introductory label.
+- Large name typography.
+- Professional role.
+- Short description.
+- Technology identity badges.
+- Primary and secondary CTA buttons.
+
+Right:
+- Large professional portrait.
+- Layered glass frame.
+- Orbital rings.
+- Floating technology tokens.
+- Depth layers.
+- Ambient particles.
+
+## Hero content
+
+Name:
+
+Vijayaragavan
+
+Professional title:
+
+Aspiring Software Developer
+
+Roles:
+
+- Backend Developer.
+- AI/ML Enthusiast.
+
+Description:
+
+"Building scalable software, intelligent solutions and real-world projects with a focus on impact."
+
+Eyebrow:
+
+"WELCOME TO MY PORTFOLIO"
+
+Buttons:
+
+- View Projects.
+- Contact Me.
+
+## Profile photograph
+
+Locate my actual profile photograph in the supplied project assets.
+
+Use it without changing my identity.
+
+Do not generate a replacement person.
+
+Do not distort the face.
+
+Use appropriate object positioning and responsive image sizing.
+
+## Genuine 3D implementation
+
+Use React Three Fiber and Three.js.
+
+Create:
+
+- True 3D particle network.
+- Instanced particle geometry.
+- Multiple orbital torus rings.
+- Layered glass structures.
+- Floating technology tokens.
+- Emerald lighting.
+- Violet rim lighting.
+- Subtle depth-of-field impression.
+- Pointer-responsive camera or object movement.
+- Gentle idle animation.
+
+Use realistic MeshPhysicalMaterial where appropriate.
+
+Create a procedural lighting environment where practical.
+
+Do not rely entirely on CSS transformations and call the result 3D.
+
+## Multi-angle presentation
+
+The reference demonstrates:
+
+- Front view.
+- Left three-quarter view.
+- Right three-quarter view.
+- Side view.
+- Isometric layered view.
+
+Implement a genuine 3D scene with camera movement or controlled perspective changes.
+
+Do not create five unrelated images as a substitute for a single coherent 3D object.
+
+On mobile, use lightweight interactions or idle movement.
+
+Do not require gyroscope permissions for the basic experience.
+
+---
+
+# 8. ABOUT SECTION
+
+Recreate View 08.
+
+Include:
+
+- Profile photograph.
+- Introduction.
+- Technical interests.
+- Education.
+- Current learning.
+- Four quick-fact cards.
+- Terminal-style whoami panel.
+
+Content:
+
+I am a Computer Science student interested in software development, backend engineering, and artificial intelligence.
+
+I have experience with Java, Python, JavaScript, and web development, while continuously developing my knowledge of backend systems, APIs, databases, and machine learning.
+
+I enjoy understanding how software systems work behind the scenes and building meaningful projects through practical implementation.
+
+Quick facts:
+
+- Education: B.E. Computer Science.
+- Academic status: Third Year.
+- Location: Tamil Nadu, India.
+- Focus: Backend Development and AI/ML.
+- Learning: Spring Boot, DSA, Machine Learning.
+
+Use the actual supplied personal details and flag any conflicting information.
+
+---
+
+# 9. SKILLS — TRUE 3D CONSTELLATION
+
+Recreate Views 04 and 05.
+
+This is another mandatory visual feature.
+
+Create a 3D constellation containing:
+
+- Central VJ object.
+- Seven glass skill nodes.
+- Different sphere sizes.
+- Emerald inner glow.
+- Violet rim lighting.
+- Thin glowing connections.
+- Floating particles.
+- Subtle orbital movement.
+- Camera focus animation.
+- Interactive skill information panel.
+
+The constellation should look like a genuine three-dimensional structure.
+
+Users should be able to:
+
+- Rotate the constellation.
+- Select a node.
+- View its skills.
+- Navigate using keyboard controls.
+- Switch to accessible list view.
+
+## Skill groups
+
+### 01 Programming
+Java, Python, JavaScript, C, C++.
+
+### 02 Frontend
+HTML, CSS, JavaScript.
+
+### 03 Backend
+Spring Boot — Learning, REST APIs, Client-Server Architecture.
+
+### 04 Database
+MySQL, Oracle SQL, PostgreSQL, MongoDB, Database Fundamentals.
+
+### 05 CS Fundamentals
+Data Structures, Algorithms, OOP, DBMS, AI/ML, Computer Networks, Web Technologies, Data Science, Operating Systems.
+
+### 06 AI/ML
+NumPy — Learning, Pandas — Learning, Scikit-Learn — Learning, ML Fundamentals.
+
+### 07 Generative & Agentic AI
+GenAI Fundamentals, Agentic AI Fundamentals, Prompt Engineering, LLM Fundamentals, RAG Basics, LangChain Basics, AI Agents, Vector Databases.
+
+Mark learning technologies clearly.
+
+Never represent learning technologies as advanced professional expertise.
+
+---
+
+# 10. PROJECTS — CINEMATIC 3D COVERFLOW
+
+Recreate Views 06 and 07.
+
+The project gallery must be visually impressive and functional.
+
+Use a central active card with surrounding cards at different angles and depths.
+
+Requirements:
+
+- Perspective transforms.
+- Visible card thickness.
+- Layered glass surfaces.
+- Reflections.
+- Emerald highlights.
+- Subtle light sweeps.
+- Controlled blur on inactive cards.
+- Active card emphasis.
+- Smooth navigation.
+- Drag and swipe.
+- Keyboard support.
+- Category filters.
+- Project detail modal.
+
+Create the side and isometric appearance through genuine layered card geometry and perspective.
+
+Keep text sharp and readable.
+
+## Project filters
+
+- All.
+- Full-Stack.
+- AI/ML.
+- Automation.
+
+## Projects
+
+Use the following content as the source of truth unless the repository contains more recent confirmed project information.
+
+### 01 VCart
+
+E-commerce platform with authentication, shopping cart, product management, and responsive design.
+
+Technologies:
+HTML5, CSS3, JavaScript, Python, Flask, Flask-CORS, BCrypt, MySQL, Vercel, Render, Railway.
+
+Code:
+https://github.com/vijayaragavan-dev/Vcart-Ecommerce.git
+
+Demo:
+https://vcart-ecommerce.vercel.app/
+
+Featured.
+
+### 02 HopeBridge Foundation
+
+Responsive NGO website showcasing social initiatives and community services.
+
+Technologies:
+HTML5, CSS3, JavaScript, Responsive Design.
+
+Code:
+https://github.com/vijayaragavan-dev/HopeBridge_Foundation_NGO.git
+
+Demo:
+https://hope-bridge-foundation-ngo.vercel.app/
+
+### 03 Personal Portfolio
+
+Developer portfolio showcasing skills, projects, and coding profiles.
+
+Technologies:
+HTML, CSS, JavaScript, TypeScript.
+
+Code:
+https://github.com/vijayaragavan-dev/vj_portfolio.git
+
+Demo:
+https://vijayaragavan.vercel.app/
+
+### 04 TNEA Guider
+
+Full-stack student counselling and college guidance application.
+
+Technologies:
+HTML, CSS, Java, Spring Boot, Python.
+
+Code:
+https://github.com/vijayaragavan-dev/tnea_guider.git
+
+### 05 AI Chatbot
+
+AI chatbot powered by Llama-3.1-8B-Instant, with and without LangChain.
+
+Technologies:
+React, TypeScript, Tailwind, Vite, FastAPI, Python, LangChain, Groq, Docker.
+
+Code:
+https://github.com/vijayaragavan-dev/chatbot.git
+
+Featured.
+
+### 06 PDF Analyzer AI
+
+AI application for extracting and understanding PDF content.
+
+Technologies:
+Python, Streamlit, Groq API, pdfplumber, python-dotenv.
+
+Code:
+https://github.com/vijayaragavan-dev/pdf_analyser-chatbot.git
+
+### 07 Student Performance Predictor
+
+Machine learning model for predicting student performance.
+
+Technologies:
+Python, Pandas, Scikit-learn, Google Colab, Jupyter.
+
+Code:
+https://github.com/vijayaragavan-dev/student-marks-prediction.git
+
+### 08 InstaFlow
+
+Social media application with authentication and user interactions.
+
+Technologies:
+Java, Spring Boot, Spring Security, JPA/Hibernate, MySQL, REST APIs, HTML, CSS, JavaScript.
+
+Code:
+https://github.com/vijayaragavan-dev/InstaFlow.git
+
+Featured.
+
+### 09 Telegram Chatbot Automation
+
+Telegram chatbot automation using n8n workflows and Telegram Bot API.
+
+Do not invent missing URLs.
+
+### 10 Birthday Wish Automation
+
+Automated birthday wishes using n8n scheduling and workflows.
+
+Do not invent missing URLs.
+
+## Project artwork
+
+Create unique artwork for each project.
+
+Do not use the same generic artwork for every project.
+
+Visual directions:
+
+- VCart: glowing shopping cart and e-commerce interface.
+- HopeBridge: community and NGO visual.
+- Portfolio: developer interface.
+- TNEA Guider: counselling dashboard.
+- AI Chatbot: AI conversation visualization.
+- PDF Analyzer: document intelligence.
+- Student Predictor: analytics visualization.
+- InstaFlow: social media interface.
+- Telegram Automation: connected workflow.
+- Birthday Automation: scheduling interface.
+
+Use original illustrations or CSS/HTML artwork.
+
+Do not fabricate screenshots of real deployed projects.
+
+Hide missing Code or Demo buttons.
+
+---
+
+# 11. CODING PROFILES
+
+Recreate View 09.
+
+Create premium cards for:
+
+- GitHub.
+- LinkedIn.
+- LeetCode.
+
+GitHub:
+https://github.com/vijayaragavan-dev
+
+LinkedIn:
+Use the confirmed URL from the existing project content. Flag conflicting URLs in the report.
+
+LeetCode username:
+uvijayaragavan-dev
+
+Keep URLs configurable.
+
+Show a contribution graph if it loads successfully.
+
+Provide graceful loading and failure handling.
+
+Never display fabricated contribution counts or coding statistics.
+
+---
+
+# 12. ACHIEVEMENTS
+
+Create the four achievement cards shown in the reference:
+
+- Projects.
+- Problems Solved.
+- Technologies.
+- Certifications.
+
+Use actual verified values only.
+
+Keep the data in a separate typed file.
+
+Unknown values must remain clearly marked as pending verification.
+
+Never display fabricated statistics or misleading zero counters.
+
+Use subtle animated counters when visible.
+
+---
+
+# 13. CONTACT AND RESUME
+
+Recreate View 10.
+
+Contact information:
+
+Email:
+uvijayaragavan03@gmail.com
+
+Phone:
++91 8667834495
+
+Location:
+Tamil Nadu, India.
+
+GitHub:
+https://github.com/vijayaragavan-dev
+
+LinkedIn:
+Use the confirmed profile URL.
+
+Include:
+
+- Glass contact cards.
+- Copy-to-clipboard actions.
+- Toast feedback.
+- Email and phone actions.
+- Validated contact form.
+- Mailto fallback.
+
+Resume:
+
+Create a premium resume card with my actual profile photograph.
+
+Use `/resume.pdf` as the expected download path.
+
+If the PDF is unavailable, document that I need to provide it.
+
+Do not generate a fake resume.
+
+---
+
+# 14. MOBILE RESPONSIVE DESIGN
+
+Recreate View 11.
+
+Mobile must not be an afterthought.
+
+Design a genuinely responsive experience.
+
+Verify:
+
+- 320px.
+- 360px.
+- 390px.
+- 414px.
+- 768px.
+- 1024px.
+- 1280px.
+- 1440px.
+- 1920px.
+
+Requirements:
+
+- No horizontal overflow.
+- Properly positioned portrait.
+- Readable headings.
+- Touch-friendly navigation.
+- Mobile glass menu.
+- Swipeable project gallery.
+- Responsive skill constellation fallback.
+- Correct spacing.
+- Appropriate card sizing.
+- Safe-area support.
+- No clipped content.
+
+The website must remain attractive on mobile, not merely technically functional.
+
+---
+
+# 15. COMPLETE DESIGN SYSTEM
+
+Recreate View 12.
+
+Build reusable tokens and components for:
+
+- Color palette.
+- Typography.
+- Primary buttons.
+- Secondary buttons.
+- Glass cards.
+- Skill badges.
+- Learning badges.
+- Featured badges.
+- Project cards.
+- Navigation.
+- Inputs.
+- Form states.
+- Modals.
+- Toasts.
+- Icon buttons.
+- Background effects.
+
+Use shared components rather than inconsistent one-off styles.
+
+---
+
+# 16. NAVIGATION AND EXPERIENCE
+
+Implement:
+
+- Sticky glass navbar.
+- VJ logo.
+- Home.
+- About.
+- Skills.
+- Projects.
+- Profiles.
+- Achievements.
+- Contact.
+- Resume.
+
+Also implement:
+
+- Active section highlighting.
+- Scroll progress.
+- Smooth scrolling.
+- Mobile full-screen glass menu.
+- Staggered menu animation.
+- Back-to-top button.
+- Desktop-only subtle glow cursor.
+
+All links must navigate correctly.
+
+Do not leave broken placeholder anchors.
+
+---
+
+# 17. PERFORMANCE REQUIREMENTS
+
+The website must look impressive without becoming unusably heavy.
+
+Use:
+
+- Dynamic imports for 3D scenes.
+- Lazy loading.
+- Instanced geometry.
+- Controlled particle counts.
+- Capped device pixel ratio.
+- Off-screen animation pausing.
+- WebGL fallback.
+- Reduced-motion support.
+- Efficient material use.
+- Proper resource cleanup.
+
+Never mount multiple expensive WebGL scenes simultaneously.
+
+Use a device capability system:
+
+FULL:
+Complete 3D experience.
+
+LITE:
+Reduced particles and simplified effects.
+
+NO-3D:
+Static visual fallback and accessible HTML components.
+
+The main content must render before expensive WebGL assets.
+
+Prioritize mobile performance.
+
+Do not claim performance scores without testing them.
+
+---
+
+# 18. ACCESSIBILITY AND SEO
+
+Implement:
+
+- Semantic HTML.
+- Keyboard navigation.
+- Visible focus states.
+- Accessible buttons.
+- Correct image alt text.
+- ARIA labels.
+- Skip link.
+- Accessible modal behavior.
+- Reduced-motion support.
+- Sufficient contrast.
+- Accessible non-3D alternatives.
+
+SEO:
+
+- Metadata.
+- Open Graph.
+- Twitter metadata.
+- Sitemap.
+- Robots.
+- Person structured data.
+- Favicon.
+- Canonical URL.
+
+---
+
+# 19. IMPLEMENTATION WORKFLOW — DO NOT SKIP PHASES
+
+Work in the following sequence.
+
+## PHASE A — Discovery and analysis
+
+Inspect the repository and references.
+
+Update `report.txt`.
+
+## PHASE B — Architecture and design foundation
+
+Prepare:
+
+- Design tokens.
+- Component structure.
+- Responsive layout.
+- Typography.
+- Navigation.
+- Shared UI components.
+
+## PHASE C — Hero
+
+Implement and visually verify the cinematic 3D hero.
+
+Do not proceed with a broken hero.
+
+## PHASE D — Skills
+
+Implement and verify the genuine 3D constellation.
+
+## PHASE E — Projects
+
+Implement and verify the cinematic coverflow, artwork, filters, and project details.
+
+## PHASE F — Remaining sections
+
+Implement About, Coding Profiles, Achievements, Contact, Resume, and Footer.
+
+## PHASE G — Responsive refinement
+
+Verify all important viewport sizes.
+
+## PHASE H — Performance and accessibility
+
+Optimize and test.
+
+## PHASE I — Final verification
+
+Run the website.
+
+Inspect it in a real browser.
+
+Capture screenshots.
+
+Compare screenshots with the supplied visualization.
+
+Fix visible differences.
+
+Repeat until the result is professionally polished.
+
+Do not consider the task complete just because the build succeeds.
+
+---
+
+# 20. REPORT.TXT — MANDATORY PROJECT STATUS DOCUMENTATION
+
+An existing `report.txt` file is available in the project root.
+
+This file is extremely important because I will share its contents with another assistant for further evaluation and implementation decisions.
+
+You MUST maintain this file throughout the project.
+
+Do not treat it as optional documentation.
+
+## Update report.txt after every meaningful implementation phase.
+
+Use this structure:
+
+# VIJAYARAGAVAN PORTFOLIO — IMPLEMENTATION REPORT
+
+## 1. Project Overview
+Project objective and current state.
+
+## 2. Reference Analysis
+- Reference image inspected.
+- HTML reference inspected.
+- Other supporting files inspected.
+- Main design decisions.
+
+## 3. Existing Project Analysis
+- Original framework.
+- Existing architecture.
+- Existing functionality.
+- Problems identified.
+
+## 4. Technical Stack
+- Existing technologies.
+- Newly installed packages.
+- Tools used.
+- Reason for each important addition.
+
+## 5. Implementation Progress
+
+For every feature, use:
+
+- COMPLETED
+- IN PROGRESS
+- NOT STARTED
+- BLOCKED
+- NEEDS USER INPUT
+
+Include:
+
+| Feature | Status | Implementation details | Verification |
+|---|---|---|---|
+| Hero | | | |
+| Hero 3D | | | |
+| About | | | |
+| Skills | | | |
+| Skills 3D | | | |
+| Projects | | | |
+| Project coverflow | | | |
+| Coding profiles | | | |
+| Achievements | | | |
+| Contact | | | |
+| Resume | | | |
+| Mobile | | | |
+| Accessibility | | | |
+| SEO | | | |
+| Performance | | | |
+
+## 6. Visual Verification
+
+Record:
+
+- Screenshots captured.
+- Viewports tested.
+- Differences from reference.
+- Visual improvements made.
+- Remaining visual defects.
+
+## 7. Testing
+
+Record actual results for:
+
+- Production build.
+- TypeScript.
+- ESLint.
+- Browser console.
+- Responsive testing.
+- Interaction testing.
+- Accessibility.
+- Lighthouse, if measured.
+
+Never fabricate successful test results.
+
+## 8. Issues and Blockers
+
+List every known issue.
+
+Explain:
+
+- Cause.
+- Impact.
+- Attempted solution.
+- Current status.
+
+## 9. User Input Required
+
+List information or assets that only I can provide.
+
+Examples:
+
+- Missing resume PDF.
+- Unconfirmed profile URL.
+- Unverified statistics.
+- Missing original photograph.
+
+Do not ask me for information that already exists in the repository.
+
+## 10. Next Implementation Actions
+
+List the next specific actions in priority order.
+
+## 11. Current Completion Estimate
+
+Give a reasonable qualitative assessment.
+
+Do not claim completion based on the number of generated files.
+
+## 12. Final Summary
+
+Describe what is genuinely implemented and verified.
+
+### Reporting rules
+
+- Keep the report concise but technically informative.
+- Update it after every major phase.
+- Preserve previous useful findings.
+- Do not erase unresolved issues.
+- Clearly distinguish implemented functionality from visual placeholders.
+- Record failed attempts and important technical decisions.
+- Include exact filenames when relevant.
+- Never claim that a feature works without testing it.
+
+At the end of every work session, update `report.txt` before stopping.
+
+---
+
+# 21. FINAL ACCEPTANCE CRITERIA
+
+The transformation is NOT complete unless the following conditions are met.
+
+## Visual
+
+[ ] Website follows the supplied multi-view visualization.
+
+[ ] Dark emerald-glass design is consistent.
+
+[ ] Hero has genuine 3D depth.
+
+[ ] Hero profile photograph is correctly displayed.
+
+[ ] Orbital rings and floating objects work.
+
+[ ] Skills constellation has genuine 3D geometry.
+
+[ ] Seven skill groups are represented.
+
+[ ] Projects gallery has cinematic coverflow presentation.
+
+[ ] All ten projects are represented.
+
+[ ] Project artwork is distinct.
+
+[ ] Remaining sections follow the same design system.
+
+[ ] Desktop and mobile both look polished.
+
+## Functionality
+
+[ ] Navigation works.
+
+[ ] Hero buttons work.
+
+[ ] Skill selection works.
+
+[ ] Project filters work.
+
+[ ] Project navigation works.
+
+[ ] Project detail view works.
+
+[ ] External links work.
+
+[ ] Contact form validation works.
+
+[ ] Copy interactions work.
+
+[ ] Resume download works when the file is supplied.
+
+[ ] Mobile menu works.
+
+## Engineering
+
+[ ] No major TypeScript errors.
+
+[ ] No major build errors.
+
+[ ] No broken imports.
+
+[ ] No unnecessary dependency duplication.
+
+[ ] No horizontal overflow.
+
+[ ] Reduced-motion support works.
+
+[ ] WebGL fallback works.
+
+[ ] Performance optimizations are implemented.
+
+[ ] Important content remains accessible without 3D.
+
+## Documentation
+
+[ ] `report.txt` is updated.
+
+[ ] Missing user assets are documented.
+
+[ ] Remaining issues are documented.
+
+[ ] Actual testing results are recorded.
+
+---
+
+# 22. STRICT EXECUTION RULES
+
+1. This is an implementation assignment, not a brainstorming assignment.
+2. You must inspect before coding.
+3. You must use the reference image throughout development.
+4. You must inspect the existing HTML and source code.
+5. You must preserve the original visual identity.
+6. You must implement actual functionality.
+7. You may install necessary dependencies and tools.
+8. You must not invent personal information.
+9. You must not fabricate achievements or project results.
+10. You must not replace genuine 3D with a collection of static images.
+11. You must not stop after building the first working version.
+12. You must run and inspect the website.
+13. You must fix visual and functional defects.
+14. You must maintain `report.txt`.
+15. You must document blockers honestly.
+16. You must not claim a task is complete without verification.
+17. You must continue implementation phase by phase without unnecessarily waiting for my approval.
+
+If you encounter a technical limitation, solve it using an appropriate alternative rather than abandoning the feature.
+
+If you encounter missing user-specific information, continue implementing the rest of the website and document the missing information in `report.txt`.
+
+Do not allow one missing asset to block the entire project.
+
+---
+
+# FINAL DIRECTIVE
+
+I am not asking for a generic portfolio with a dark background.
+
+I am asking you to transform my existing portfolio into a website that closely matches the supplied cinematic 3D portfolio visualization.
+
+The uploaded visualization is the target.
+
+The HTML reference is the design foundation.
+
+The existing project is the starting point.
+
+The implementation must be real, interactive, responsive, and production-oriented.
+
+**YOUR JOB IS TO MAKE THE ACTUAL WEBSITE LOOK AND FEEL LIKE THE REFERENCE, NOT JUST DESCRIBE HOW IT COULD LOOK.**
+
+Start by inspecting the entire project and its references.
+
+Write the initial analysis into `report.txt`.
+
+Then begin implementation immediately.
+
+Do not stop until you have completed the available implementation phases, tested the website, inspected its visual output, and documented the actual status.

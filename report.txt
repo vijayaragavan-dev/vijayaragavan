@@ -187,3 +187,431 @@ Honest defects and limitations
 - simple-icons is a devDependency only and is never imported by app code;
   the brand paths are vendored into lib/tech-icons.ts. Regenerate that file
   with `npm run icons:generate` after bumping the simple-icons version.
+
+8. OPENCODE MCP SERVER SETUP (2026-11-25)
+-----------------------------------------
+Scope: install, configure and verify four MCP servers in the local OpenCode
+v2.4.1 environment. No portfolio source file was modified and no project
+dependency was added.
+
+8.1 Environment verified
+- OpenCode  : v2.4.1
+              binary  C:\Users\User\.local\opencode-v2\node_modules\@opencode\cli\bin\opencode.exe
+              launcher C:\Users\User\.local\bin\opencode-v2.cmd (sets the XDG_* dirs)
+- Node.js   : v22.20.0
+- npm       : 10.9.3
+- npx       : 10.9.3
+- OS        : Windows (win32)
+- Config    : C:\Users\User\.config\opencode-v2\opencode\opencode.jsonc
+- Backup    : C:\Users\User\.config\opencode-v2\opencode\opencode.jsonc.backup-20261125-125809
+              (428 bytes, exact copy of the pre-change file)
+
+Important CLI caveat found: the plain `opencode` command on PATH resolves to
+the V1 install (v1.18.33, C:\npm-global\node_modules\opencode-ai). The V2
+installation is only reachable through `opencode-v2.cmd` (or `opencode-v2`).
+All work below used the V2 launcher, so the V1 config was left untouched.
+
+8.2 Servers configured (global config, existing servers preserved)
+clawdcursor, agentmemory and gitnexus were already present and were not
+changed. The four new entries were written with --global so that the
+portfolio repository stays clean (a project-scoped add would have created a
+new ./opencode.json in the repo).
+
+  context7   remote  https://mcp.context7.com/mcp
+  playwright local   npx -y @playwright/mcp@latest        (0.0.86)
+  shadcn     local   npx -y shadcn@latest mcp             (4.23.0)
+  figma      remote  https://mcp.figma.com/mcp
+
+Configuration file validates as JSON and now lists seven servers.
+
+8.3 Authentication
+- Figma required OAuth. The official flow was started with
+  `opencode mcp auth figma` (PKCE, dynamic client registration, callback on
+  127.0.0.1) and completed in the browser against figma.com. The pending
+  authorization process reported "Connected to figma / Done".
+- Tokens are held in OpenCode's own credential store outside the config
+  file; no credential, token or secret was written to opencode.jsonc, to this
+  report, or to any project file.
+- context7, playwright and shadcn need no authentication.
+
+8.4 Connection verification
+`opencode-v2 mcp list` reports every server connected:
+
+  connected  agentmemory, clawdcursor, context7, figma, gitnexus,
+             playwright, shadcn
+
+8.5 Functional tests (real tool calls)
+- context7   resolve-library-id("Next.js") returned /vercel/next.js
+             (7,938 snippets, reputation High). query-docs("/vercel/next.js",
+             "middleware matcher config") returned the matcher snippet from
+             the Next.js docs. PASS
+- playwright browser_navigate("https://example.com") loaded the page and
+             reported title "Example Domain". Browser closed afterwards. PASS
+- shadcn     get_add_command_for_items(["@shadcn/button"]) returned
+             "npx shadcn@latest add @shadcn/button". PASS
+- figma      whoami returned the authenticated account (handle Vijayaragavan,
+             team seat View, starter tier) and 46 design tools were exposed
+             to the agent. PASS
+
+8.6 Cleanup
+- The Playwright test snapshot (.playwright-mcp/page-2026-11-25T07-30-34-621Z.yml)
+  was deleted; the pre-existing .playwright-mcp history was left untouched.
+- Temporary OAuth log/URL files in the temp folder were deleted.
+- `git status` is unchanged apart from the pre-existing untracked prompt.txt.
+
+8.7 Remaining issues / notes
+- The portfolio has no components.json, so shadcn registry tools that need a
+  project registry (search/list/view items) will report that file as missing.
+  The MCP server itself is connected and works; run `npx shadcn@latest init`
+  in a project that actually uses shadcn before using those registry tools.
+- Playwright MCP writes page snapshots to .playwright-mcp/ in the workspace
+  by default; this is expected behaviour of the server, not an error.
+- Figma access depends on the signed-in Figma account and OAuth token
+  refresh. If the connection ever shows needs_auth again, run /mcps and sign
+  in, or repeat `opencode-v2 mcp auth figma`.
+- `npm view` in this shell returned "Unknown command: pm" (a local npm shim
+  quirk); it does not affect npx, which installed and runs both local servers
+  correctly.
+
+Status: 4/4 installed, 4/4 connected, 4/4 verified, 0 awaiting manual
+authentication. Existing configuration preserved; backup retained.
+
+================================================================
+9. MCP EXPANSION AND DOMAIN AGENT WORKSPACE (2026-11-25, second session)
+================================================================
+
+9.1 Objective
+Expand the global OpenCode 2.4.1 MCP setup into a curated, domain-organized
+toolkit, add focused engineering agents and slash commands, document the
+result, and leave the portfolio repository untouched apart from documentation.
+
+All work was done against the V2 binary
+(C:\Users\User\.local\bin\opencode-v2.cmd). Plain `opencode` still resolves to
+V1.18.33 and was not modified.
+
+9.2 What was added
+- uv 0.13.10, installed to run isolated Python MCP servers.
+- serena-agent 2.1.0 (uv tool) - code intelligence, classic tool interface.
+- semgrep 1.187.0 (uv tool) - installed in isolation after a global pip install
+  upgraded starlette and broke FastAPI.
+- trivy 0.76.2 with the MCP plugin 0.0.20.
+- 10 new MCP entries alongside the 7 that already existed.
+
+9.3 Server inventory (17 entries)
+  context7         remote   https://mcp.context7.com/mcp            CONNECTED
+  playwright       local    npx -y @playwright/mcp@latest          CONNECTED
+  chrome-devtools  local    npx -y -p chrome-devtools-mcp@latest   CONNECTED
+  figma            remote   https://mcp.figma.com/mcp              CONNECTED
+  shadcn           local    npx -y shadcn@latest mcp               CONNECTED
+  clawdcursor      local    clawdcursor mcp --compact              CONNECTED
+  agentmemory      local    agentmemory-mcp                        CONNECTED
+  gitnexus         local    gitnexus mcp                           CONNECTED
+  serena           local    serena start-mcp-server (tools mode)   CONNECTED
+  semgrep          local    semgrep mcp                            CONNECTED
+  trivy            local    trivy mcp                              CONNECTED
+  dbhub            local    npx -y -p @bytebase/dbhub --demo      CONNECTED
+  chroma           local    uvx chroma-mcp --client-type persistent CONNECTED
+  fetch            local    uvx mcp-server-fetch                   CONNECTED
+  aws-docs         local    uvx awslabs.aws-documentation-mcp-server CONNECTED
+  huggingface      remote   https://huggingface.co/mcp             CONNECTED
+  github           remote   https://api.githubcopilot.com/mcp/     DISABLED
+
+Result: 16 enabled, 16 connected, 208 tools exposed. `pending` entries in
+`mcp list` are lazy-start servers that have not been called yet, not failures.
+
+9.4 Configuration issues found and fixed
+- Protocol negotiation. fetch, serena and aws-docs advertise the 2026-07-28
+  MCP revision and reject the legacy initialize handshake. With the default
+  "auto" setting the handshake failed with: "the connection is serving the
+  2026-07-28 protocol; the initialize handshake is not accepted". Each of the
+  three now sets "protocol": "2026-07-28", which is an officially supported
+  field in the OpenCode config schema (enum: legacy, auto, 2026-07-28).
+  All three connect after the change.
+- Chroma. chroma-mcp resolves pydantic 2.12, which breaks the server; the
+  command pins --with "pydantic<2.12".
+- npx on Windows. PowerShell's npx shim mangles arguments, so packages whose
+  binary name differs from the package name use the explicit
+  `npx -y -p <package> <binary>` form.
+- Privacy. Semgrep runs with SEMGREP_SEND_METRICS=off. Chrome DevTools runs
+  with --no-usage-statistics and --no-performance-crux.
+- DBHub uses --demo (bundled SQLite sample database) because no real DSN was
+  supplied. It is disposable and contains no user data.
+
+9.5 Domain agents (12)
+Created in C:\Users\User\.config\opencode-v2\opencode\agents\:
+
+  fullstack-engineer      all       end-to-end features, verification required
+  frontend-specialist     subagent  React/Next UI, responsive, a11y, performance
+  backend-engineer        subagent  APIs, validation, auth, persistence
+  ui-ux-designer          subagent  design systems, Figma-to-spec handoff
+  ai-ml-engineer          subagent  datasets, training, evaluation, inference cost
+  genai-agent-engineer    subagent  agent design, tool schemas, guardrails, evals
+  rag-specialist          subagent  chunking, embeddings, retrieval evaluation
+  database-engineer       subagent  schema review, safe SQL, migrations
+  cybersecurity-analyst   subagent  local SAST/SCA, read-only
+  devops-engineer         subagent  CI/CD, containers, IaC, rollback plans
+  qa-testing-engineer     subagent  functional, a11y, visual, performance tests
+  research-documentation  subagent  cited technical writing, Markdown only
+
+Each agent denies the MCP servers irrelevant to its domain. cybersecurity-analyst
+and research-documentation cannot edit source; research-documentation and
+ui-ux-designer cannot run shell commands; database-engineer must ask before
+executing SQL; devops-engineer must ask before apply/push/create and is denied
+terraform destroy.
+
+9.6 Slash commands (3)
+  /mcp-health       devops-engineer         status table plus diagnosis, no edits
+  /security-review  cybersecurity-analyst   Semgrep + Trivy review
+  /ui-audit         frontend-specialist     console, responsive, a11y, Lighthouse
+
+9.7 Permissions
+42 global rules: shell * asks by default; read-only git/ls/rg/typecheck/lint/
+build/tests and docker inspect commands are pre-approved; force-push,
+reset --hard, rm -rf, recursive delete, Docker prune, kubectl delete,
+terraform destroy, dropdb, DROP DATABASE and shutdown are denied. Reads of
+.ssh, *.pem, *.key and .aws/credentials are denied; .env reads ask.
+external_directory asks. Agent-level rules are narrower and deny wins.
+
+9.8 Verification
+- Config parses: ConvertFrom-Json returns the 17 server names, 42 permission
+  rules.
+- `opencode-v2 reload` reports "Configuration reloaded".
+- `opencode-v2 mcp list`: 16 connected, github disabled.
+- /api/agent lists all 12 agents with the intended modes.
+- /api/command lists mcp-health, security-review and ui-audit.
+- Live agent test 1: research-documentation read package.json and reported
+  next 16.4.6, react 19.3.1, react-dom 19.3.1 and the script list. PASS
+- Live agent test 2: database-engineer used DBHub search_objects and returned
+  department, dept_emp, dept_manager, employee, salary, title. PASS
+- Earlier direct stdio probes confirmed tool counts for serena (23), fetch (1),
+  trivy (6), semgrep (7), chroma (13), dbhub (2), chrome-devtools (33),
+  aws-docs (5).
+
+9.9 Backups
+  opencode.jsonc.backup-20261125-125809   428 B   original 3-server config
+  opencode.jsonc.backup-20261125-141311  1145 B   7-server config
+  opencode.jsonc.backup-20261125-190108  6470 B   17-server config before
+                                                   protocol pinning
+All in C:\Users\User\.config\opencode-v2\opencode\. No existing config was
+overwritten without a timestamped copy.
+
+9.10 Documentation
+MCP_TOOLKIT_GUIDE.md was written at the repository root. It covers server
+status, domains, agents, commands, permissions, manual steps, known fixes and
+maintenance commands.
+
+9.11 Remaining manual steps
+- GITHUB: AUTHENTICATION REQUIRED. The remote GitHub MCP server does not
+  support dynamic client registration, so OAuth cannot complete. Create a
+  fine-grained PAT, set GITHUB_PERSONAL_ACCESS_TOKEN in the environment, then
+  set "disabled": false on the github entry and re-run `mcp list`. The token
+  must not be written into opencode.jsonc or any project file.
+- HUGGINGFACE: works anonymously with rate limits. Set HF_TOKEN for higher
+  limits. Optional.
+- DBHUB: connected to the demo database only. Supply a real DSN when one is
+  available; keep it in an environment variable. Optional.
+- SERENA: not activated on this repository, so no .serena/ directory was
+  created. Activate per project when symbol indexing is wanted. Optional.
+- FIGMA: already authenticated in the previous session. If it ever returns to
+  needs_auth, run `opencode-v2 mcp auth figma`.
+
+9.12 Deliberately not installed
+Puppeteer (Playwright covers it), DuckDuckGo (built-in web search), Qdrant and
+Pinecone (Chroma chosen), AWS API server (documentation-only chosen, no
+credentials), Kubernetes (no cluster), Postman, Atlassian, Slack, Unsplash,
+Firecrawl and Browserbase (keys, paid access, or no need), Docker MCP gateway
+(Docker daemon not running), Snyk (no account).
+
+9.13 Final state
+No portfolio source file was modified and no dependency was added to the
+project. New untracked files are MCP_TOOLKIT_GUIDE.md and the pre-existing
+prompt.txt; report.txt is modified by this append.
+
+Status: 10 servers added, 17 configured, 16 enabled and connected, 16 verified
+or probed, 12 agents and 3 commands loaded, 1 awaiting a user-supplied token.
+
+================================================================
+10. GITHUB MCP AUTHENTICATION (2026-11-25, third session)
+================================================================
+
+10.1 Outcome
+github is CONNECTED and VERIFIED. Authenticated as vijayaragavan-dev
+(id 203442815) with the scopes repo, read:org, read:user, gist and workflow.
+47 tools are exposed. get_me returned the account (27 public repos, 2 private);
+list_branches on vijayaragavan-dev/vijayaragavan returned main
+(ecb0b45bc6b4617d01732ab15f430f5640a0e2c1).
+
+10.2 Why automatic OAuth could not work
+- GitHub's protected-resource metadata points to the issuer
+  https://github.com/login/oauth.
+- The RFC 8414 metadata at
+  https://github.com/.well-known/oauth-authorization-server/login/oauth lists
+  the authorization, token and device endpoints but no registration_endpoint.
+- OpenCode's MCP OAuth client requires dynamic client registration, so
+  `opencode-v2 mcp auth github` reports "not an OAuth-capable remote server"
+  and the earlier attempt failed with "does not support dynamic client
+  registration". This is a limitation on GitHub's side, not a config error.
+
+10.3 What was done
+1. Installed GitHub CLI 2.105.0 with winget (package GitHub.cli).
+2. Ran `gh auth login --web` with scopes repo, read:org, read:user, gist,
+   workflow. The one-time device code 6959-F598 was approved in the browser.
+   Result: logged in as vijayaragavan-dev; token stored in the Windows keyring.
+3. Moved the token into the user environment as
+   GITHUB_PERSONAL_ACCESS_TOKEN without printing it, and persisted it with
+   `opencode-v2 service set env GITHUB_PERSONAL_ACCESS_TOKEN`.
+4. Set the github entry to "disabled": false. The header remains
+   "Authorization: Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}"; no token was
+   written to opencode.jsonc.
+5. Restarted the background service. `mcp list` reports github connected and
+   a live get_me call succeeds.
+
+10.4 Root cause of the first failure
+The background service had been started before the variable existed. Windows
+process environments are fixed at creation, so the header resolved to
+"Bearer " and the endpoint returned 400 "Authorization header is badly
+formatted". A user-level setx alone is not enough for a running service; the
+service must be restarted with the variable, and `service set env` makes it
+survive later restarts.
+
+10.5 Security note
+- `opencode-v2 service get` prints service environment values in plain text.
+  It exposed the token once in this session's tool output. The token is not in
+  the repository, opencode.jsonc, this report or any project file, but it
+  should be treated as exposed to the session log and the model provider.
+- Recommended rotation if that log is shared: `gh auth logout --hostname
+  github.com`, repeat the device login, then repeat the setenv and
+  `service set env` steps.
+- The token has repo scope and can read and write the user's repositories.
+  Treat it as a credential, not a public identifier.
+
+10.6 Updated counts and backup
+17 configured, 17 enabled, 17 connected, 255 tools exposed.
+New backup: opencode.jsonc.backup-20261125-192620 (before enabling github).
+
+Status: GitHub CONNECTED and VERIFIED; no manual step remains for the core
+connection. Credential rotation is the only optional follow-up.
+
+================================================================
+11. SKILLS TECHNOLOGY UNIVERSE (2026-11-25, fourth session)
+================================================================
+
+11.1 Objective
+Replace only the right-hand technology detail panel of the Skills section
+with an interactive 3D technology universe. Preserve the left WebGL
+constellation, all seven categories, all 37 skill entries, category
+navigation and the existing page behaviour.
+
+11.2 What changed
+- Added components/ui/TechUniverse.tsx.
+  - Renders the selected group as a CSS 3D constellation of dimensional
+    technology marks.
+  - Focal artifact plus orbiting objects, layered SVG extrusion, brand
+    accents, aura, orbital rings and a soft ground pool.
+  - Two-phase group transition (out then in) without remounting the panel.
+  - Per-object pointer drag with inertia, empty-stage orbit drag with
+    inertia, reset control, hover labels and a live selection readout.
+  - Keyboard support: Tab to an object, arrow keys rotate it, R or Home
+    resets it, Enter/Space selects it.
+  - Pauses float/drift animation when offscreen or when the document is
+    hidden. Honors prefers-reduced-motion.
+- Updated components/ui/TechIcon.tsx.
+  - Added bare and decorative rendering modes.
+  - Exported techBrandColor() and techMarkIsWide().
+  - Kept the existing framed mode and brand-alias handling (java,
+    scikit-learn).
+- Updated components/sections/Skills.tsx.
+  - Replaced the .tech-grid / SkillTechnologyCard list with TechUniverse.
+  - Removed the keyed wrapper that forced a remount on every category
+    change, allowing the new component to run its own transition.
+- Updated app/globals.css.
+  - Added the technology-universe styles, responsive stage heights,
+    object layers, orbit drag states, focus rings and reduced-motion
+    handling.
+  - Removed the retired .tech-grid / .tech-tile* card styles.
+  - Kept the shared .tech-icon-* styles used by TechIcon's framed mode.
+- Removed components/ui/SkillTechnologyCard.tsx (no remaining imports).
+
+11.3 Architecture decision
+The universe uses CSS 3D rather than a second React Three Fiber canvas.
+This keeps a single WebGL context for the existing left constellation,
+avoids competing with lib/webgl-lifecycle.ts, reuses the existing
+brandIcons/TechIcon data, and adds no npm dependencies.
+
+11.4 Layout and data
+- Programming: 5 objects.
+- Frontend: 3 objects.
+- Backend: 3 objects (Spring Boot marked learning).
+- Database: 5 objects (Oracle uses the wide wordmark variant).
+- CS Fundamentals: 9 objects.
+- AI/ML: 4 objects (NumPy, Pandas and Scikit-Learn marked learning).
+- Generative & Agentic AI: 8 objects.
+The focal object is index 0; the remaining objects use a centered ring for
+groups of four or fewer and two alternating depth rings for larger groups.
+The selected skill, group code, group label and learning state are shown in
+the readout below the stage.
+
+11.5 Accessibility
+- Stage exposes role="group" with a category-specific accessible name.
+- Every object is a real button with an aria-label; learning objects say
+  "— learning".
+- Selection uses aria-pressed and is announced through an aria-live readout.
+- Visible focus ring; keyboard hint is available to screen readers.
+- Decorative SVG marks are aria-hidden and not focusable.
+- Hover/focus labels are aria-hidden because the button already names the
+  technology.
+- prefers-reduced-motion removes float, drift, entry, ring and transition
+  animations.
+- Touch targets are expanded to at least 44px effective size for the
+  smallest/deepest objects; empty-stage vertical swipes still scroll the
+  page while horizontal drags orbit the universe.
+
+11.6 Performance and cleanup
+- Only the active category's objects are in the DOM (3 to 9 objects).
+- No additional canvas or WebGL context is created.
+- Float and drift animations pause when the stage is offscreen.
+- Orbit and object rotation animation frames are cancelled on reset,
+  category change and unmount.
+- Group-transition timers are cleared on change and unmount.
+- No new dependencies; package.json is unchanged.
+
+11.7 Verification actually executed
+- npm run typecheck: passed.
+- npm run lint: passed with no errors or warnings.
+- Playwright desktop checks at 1440, 1280 and 1024 wide:
+  - All seven tabs selected and rendered the expected object counts.
+  - Object drag changed only that object's --rx/--ry.
+  - Empty-stage drag changed the world --wx/--wy.
+  - Reset restored the default orbit and every object rotation.
+  - Enter/Space selected and deselected; the readout followed.
+  - Arrow keys rotated the focused object; R restored it.
+  - Offscreen scrolling set data-active="false" and paused the float;
+    returning to the section resumed it.
+- Playwright responsive checks at 1440, 1280, 1024, 834, 768, 430, 390,
+  360 and 320 wide:
+  - document.scrollWidth never exceeded window.innerWidth.
+  - All projected object boxes stayed inside the stage.
+  - Stage sizes adapted from 231x280 at 320 wide to 329x330 at 1440 wide.
+- Touch checks in a 390x844 hasTouch context using CDP touch events:
+  - Touch drag rotated the targeted object with inertia.
+  - Touch drag on empty stage orbited the world.
+  - Vertical touch swipe scrolled the page without orbiting.
+  - Tap selected an object and updated the readout.
+  - Smallest projected object at 360 wide had a measured effective
+    hit area of 44x61 CSS px after hit slop.
+- Reduced-motion emulation: data-reduced-motion="true"; float, drift,
+  entry and ring animation names all resolved to none.
+- Console after a clean reload: 0 errors. The only warnings were the
+  pre-existing THREE.Clock deprecation notice and the pre-existing
+  ScrollTrigger static-container warning.
+- Screenshots captured during the pass include:
+  audit-final-panel-1280.png, audit-final-panel-390.png,
+  audit-after-panel-cs-v2.png, audit-after-panel-genai-v2.png and
+  audit-after-panel-db-390.png.
+
+11.8 Final status
+The right technology panel is now a responsive, keyboard-accessible CSS 3D
+universe. The left constellation and its seven-category navigation are
+unchanged. No unrelated portfolio section, data file or dependency was
+modified. report.txt is append-only; this section was added without
+altering earlier content.
