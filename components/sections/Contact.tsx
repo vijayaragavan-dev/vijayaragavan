@@ -14,6 +14,8 @@ import {
   X,
 } from "lucide-react";
 import { GithubMark, LinkedinMark } from "@/components/ui/BrandIcons";
+import ContactScreenDialog from "@/components/ui/ContactScreenDialog";
+import type { ScreenChannel } from "@/components/ui/ContactScreenDialog";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { useToast } from "@/components/ui/Toast";
 import { links } from "@/data/links";
@@ -26,6 +28,7 @@ const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURICom
 const mailtoHref = `mailto:${links.email}?subject=${encodeURIComponent(
   "Portfolio Contact — Vijayaragavan",
 )}`;
+const telHref = `tel:${links.phoneHref}`;
 
 type Hotspot = {
   key: string;
@@ -55,7 +58,7 @@ const hotspots: Hotspot[] = [
   {
     key: "phone",
     ariaLabel: `Phone ${links.phone}`,
-    href: `tel:${links.phoneHref}`,
+    href: telHref,
     external: false,
     left: 11.59,
     top: 61.05,
@@ -94,22 +97,9 @@ const hotspots: Hotspot[] = [
   },
 ];
 
-type ChannelIcon = React.ComponentType<{
-  size?: number;
-  className?: string;
-  "aria-hidden"?: boolean | "true" | "false";
-}>;
-
-type FallbackChannel = {
-  key: string;
-  label: string;
-  detail: string;
-  href: string;
-  Icon: ChannelIcon;
-  external: boolean;
-};
-
-const fallbackChannels: FallbackChannel[] = [
+// Shared by the compact list below the portrait and the enlarged laptop
+// screen dialog, so every destination is defined exactly once.
+const contactChannels: ScreenChannel[] = [
   {
     key: "email",
     label: "Email",
@@ -122,7 +112,7 @@ const fallbackChannels: FallbackChannel[] = [
     key: "phone",
     label: "Phone",
     detail: links.phone,
-    href: `tel:${links.phoneHref}`,
+    href: telHref,
     Icon: Phone,
     external: false,
   },
@@ -190,11 +180,13 @@ function copyWithFallback(value: string): Promise<void> {
 export default function Contact() {
   const { notify } = useToast();
   const [tipOpen, setTipOpen] = useState(false);
+  const [screenOpen, setScreenOpen] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const copyTimer = useRef<number | null>(null);
   const tipTimer = useRef<number | null>(null);
   const hitRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const laptopTriggerRef = useRef<HTMLButtonElement>(null);
   const hadTip = useRef(false);
 
   useEffect(() => {
@@ -332,6 +324,20 @@ export default function Contact() {
                     </span>
                   </a>
                 ))}
+                {/* On narrow screens the small screen hotspots are replaced by
+                    one comfortable tap target that opens the enlarged screen. */}
+                <button
+                  ref={laptopTriggerRef}
+                  type="button"
+                  className="contact-laptop-trigger"
+                  aria-label="Open enlarged laptop screen with contact links"
+                  aria-haspopup="dialog"
+                  aria-expanded={screenOpen}
+                  onClick={() => {
+                    setTipOpen(false);
+                    setScreenOpen(true);
+                  }}
+                />
               </div>
 
               {tipOpen && (
@@ -374,7 +380,7 @@ export default function Contact() {
             </div>
 
             <div className="contact-fallback mt-5 grid gap-2 md:hidden">
-              {fallbackChannels.map((channel) => {
+              {contactChannels.map((channel) => {
                 const Icon = channel.Icon;
                 return (
                   <a
@@ -449,6 +455,13 @@ export default function Contact() {
           </div>
         </div>
       </div>
+
+      <ContactScreenDialog
+        open={screenOpen}
+        onOpenChange={setScreenOpen}
+        channels={contactChannels}
+        returnFocusRef={laptopTriggerRef}
+      />
     </section>
   );
 }

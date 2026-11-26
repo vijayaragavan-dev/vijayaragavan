@@ -1234,6 +1234,404 @@ h6 {
   animation: dialog-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Comfortable tap target over the laptop display. Pointer events stay off on
+   desktop so the existing per-card hotspots keep working there; the control
+   remains keyboard-focusable at every width. */
+.contact-laptop-trigger {
+  position: absolute;
+  left: 8.8%;
+  top: 44.2%;
+  z-index: 3;
+  width: 44.8%;
+  height: 32%;
+  padding: 0;
+  border: 0;
+  border-radius: 0.6rem;
+  background: transparent;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.contact-laptop-trigger:focus-visible {
+  outline: 2px solid #6ff2c8;
+  outline-offset: 3px;
+}
+
+/* Narrow widths and any coarse-pointer device (phones, tablets) get the
+   enlarged screen; fine-pointer desktops keep the direct card hotspots. */
+@media (max-width: 1024px), (hover: none) and (pointer: coarse) {
+  .contact-laptop-trigger {
+    pointer-events: auto;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .contact-laptop-trigger:active {
+    background: rgba(52, 224, 161, 0.1);
+    box-shadow: inset 0 0 0 1.5px rgba(111, 242, 200, 0.6);
+  }
+}
+
+/* ---------- Enlarged contact laptop screen ---------- */
+
+.contact-screen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background:
+    radial-gradient(
+      120% 90% at 50% 8%,
+      rgba(52, 224, 161, 0.1),
+      transparent 62%
+    ),
+    rgba(2, 5, 7, 0.8);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+}
+
+.contact-screen-overlay[data-state="open"] {
+  animation: overlay-in 0.28s ease-out both;
+}
+
+.contact-screen-overlay[data-state="closed"] {
+  animation: overlay-out 0.2s ease-in both;
+}
+
+.contact-screen-dialog {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 91;
+  width: min(43rem, calc(100vw - 1.5rem));
+  max-height: min(88svh, 44rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(111, 242, 200, 0.22);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(
+      120% 70% at 50% 0%,
+      rgba(52, 224, 161, 0.15),
+      transparent 58%
+    ),
+    radial-gradient(
+      95% 60% at 92% 92%,
+      rgba(52, 224, 161, 0.1),
+      transparent 62%
+    ),
+    linear-gradient(165deg, #0a1519, #060b0f 52%, #05080b);
+  box-shadow:
+    0 40px 120px -40px rgba(0, 0, 0, 0.95),
+    0 0 90px -34px rgba(52, 224, 161, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(52, 224, 161, 0.4) transparent;
+}
+
+.contact-screen-dialog[data-state="open"] {
+  animation: contact-screen-in 0.42s var(--ease-soft) both;
+}
+
+.contact-screen-dialog[data-state="closed"] {
+  animation: contact-screen-out 0.24s ease-in both;
+}
+
+.contact-screen-inner {
+  position: relative;
+  isolation: isolate;
+  padding: 1.3rem 1.2rem calc(1.15rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 640px) {
+  .contact-screen-inner {
+    padding: 1.75rem 1.75rem 1.35rem;
+  }
+}
+
+.contact-screen-glow,
+.contact-screen-grid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.contact-screen-glow {
+  background:
+    radial-gradient(
+      60% 40% at 50% 0%,
+      rgba(52, 224, 161, 0.18),
+      transparent 70%
+    ),
+    radial-gradient(
+      45% 35% at 8% 96%,
+      rgba(52, 224, 161, 0.12),
+      transparent 70%
+    );
+}
+
+.contact-screen-grid {
+  background-image:
+    linear-gradient(to right, rgba(111, 242, 200, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(111, 242, 200, 0.06) 1px, transparent 1px);
+  background-size: 46px 46px;
+  opacity: 0.6;
+  mask-image: radial-gradient(80% 70% at 50% 0%, #000 10%, transparent 78%);
+  -webkit-mask-image: radial-gradient(
+    80% 70% at 50% 0%,
+    #000 10%,
+    transparent 78%
+  );
+}
+
+.contact-screen-head {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding-right: 3rem;
+}
+
+.contact-screen-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(111, 242, 200, 0.34);
+  background: rgba(52, 224, 161, 0.1);
+  color: #6ff2c8;
+  box-shadow: 0 0 26px -8px rgba(52, 224, 161, 0.65);
+}
+
+.contact-screen-heading {
+  min-width: 0;
+}
+
+.contact-screen-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 5.2vw, 1.85rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--color-ink);
+}
+
+.contact-screen-sub {
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.contact-screen-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(238, 241, 246, 0.72);
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-screen-close:hover {
+    color: var(--color-ink);
+    border-color: rgba(111, 242, 200, 0.4);
+    background: rgba(52, 224, 161, 0.1);
+  }
+}
+
+.contact-screen-close:focus-visible {
+  outline: 2px solid #6ff2c8;
+  outline-offset: 2px;
+}
+
+.contact-screen-list {
+  position: relative;
+  margin-top: 1.15rem;
+  display: grid;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 560px) {
+  .contact-screen-list {
+    grid-auto-flow: column;
+    grid-template-columns: 1.14fr 0.86fr;
+    grid-template-rows: repeat(3, auto);
+    align-items: start;
+  }
+}
+
+.contact-screen-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 3.4rem;
+  padding: 0.62rem 0.7rem;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
+  color: var(--color-ink);
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-screen-link:hover {
+    border-color: rgba(111, 242, 200, 0.55);
+    background: linear-gradient(
+      160deg,
+      rgba(52, 224, 161, 0.14),
+      rgba(52, 224, 161, 0.05)
+    );
+    box-shadow:
+      inset 0 0 0 1px rgba(111, 242, 200, 0.25),
+      0 0 28px -10px rgba(52, 224, 161, 0.6);
+    transform: translateY(-1px);
+  }
+}
+
+.contact-screen-link:focus-visible {
+  outline: 2px solid #6ff2c8;
+  outline-offset: 2px;
+  border-color: rgba(111, 242, 200, 0.55);
+  background: linear-gradient(
+    160deg,
+    rgba(52, 224, 161, 0.14),
+    rgba(52, 224, 161, 0.05)
+  );
+}
+
+.contact-screen-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(52, 224, 161, 0.2);
+  background: rgba(52, 224, 161, 0.1);
+  color: #6ff2c8;
+}
+
+.contact-screen-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.contact-screen-label {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(142, 155, 176, 0.8);
+}
+
+.contact-screen-detail {
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: rgba(238, 241, 246, 0.86);
+  overflow-wrap: anywhere;
+}
+
+.contact-screen-arrow {
+  flex: none;
+  margin-left: auto;
+  color: rgba(142, 155, 176, 0.5);
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-screen-link:hover .contact-screen-arrow {
+    color: #6ff2c8;
+    transform: translate(1px, -1px);
+  }
+}
+
+.contact-screen-link:focus-visible .contact-screen-arrow {
+  color: #6ff2c8;
+  transform: translate(1px, -1px);
+}
+
+.contact-screen-foot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.95rem;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(142, 155, 176, 0.45);
+}
+
+.contact-screen-foot span {
+  white-space: nowrap;
+}
+
+.contact-screen-foot-long {
+  display: none;
+}
+
+@media (min-width: 560px) {
+  .contact-screen-foot-short {
+    display: none;
+  }
+
+  .contact-screen-foot-long {
+    display: inline;
+  }
+}
+
+.contact-screen-wave {
+  display: block;
+  width: 100%;
+  height: 2.9rem;
+  margin-top: 0.7rem;
+  color: rgba(52, 224, 161, 0.32);
+  pointer-events: none;
+}
+
+.contact-screen-wave path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+
+.contact-screen-wave path + path {
+  opacity: 0.6;
+}
+
 /* ---------- Portrait frame ---------- */
 
 .portrait-frame {
@@ -1975,6 +2373,37 @@ h6 {
   }
 }
 
+@keyframes overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes contact-screen-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 18px)) scale(0.965);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes contact-screen-out {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 12px)) scale(0.98);
+  }
+}
+
 @keyframes orbit-turn {
   from {
     rotate: 0deg;
@@ -2050,7 +2479,9 @@ h6 {
   .tech-object[data-selected="true"] .tech-object-ring,
   .contact-float,
   .contact-tip,
-  .contact-hotspot {
+  .contact-hotspot,
+  .contact-screen-overlay,
+  .contact-screen-dialog {
     animation: none !important;
   }
 
@@ -2059,7 +2490,10 @@ h6 {
   .tech-object-label,
   .tech-universe-parallax,
   .tech-universe-world,
-  .tech-universe-reset {
+  .tech-universe-reset,
+  .contact-screen-link,
+  .contact-screen-close,
+  .contact-screen-arrow {
     transition: none !important;
   }
 

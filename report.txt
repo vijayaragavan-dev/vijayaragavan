@@ -615,3 +615,153 @@ universe. The left constellation and its seven-category navigation are
 unchanged. No unrelated portfolio section, data file or dependency was
 modified. report.txt is append-only; this section was added without
 altering earlier content.
+
+================================================================
+12. CONTACT LAPTOP ENLARGED SCREEN (2026-11-26, fifth session)
+================================================================
+
+12.1 Objective
+Make the five contact links on the laptop screen usable on phones and
+tablets without redesigning the Contact section. The portrait, laptop
+image, contact cards, copy buttons, résumé button and destinations are
+untouched.
+
+12.2 Files modified
+- components/ui/ContactScreenDialog.tsx (new): the enlarged laptop screen
+  dialog and its shared channel type.
+- components/sections/Contact.tsx: shared contact channel data, the
+  laptop-screen trigger, dialog state and rendering.
+- app/globals.css: trigger area, dialog styling, opening/closing
+  animations, hover scoping and reduced-motion rules.
+No other source file, data file, dependency or configuration was changed.
+
+12.3 Implementation
+- The existing hotspot percentages were reused. A transparent trigger
+  button sits over the laptop display (left 8.8%, top 44.2%, width 44.8%,
+  height 32% of the portrait frame).
+- On screens up to 1024px wide, and on any coarse-pointer device, the
+  trigger accepts pointer events and opens the enlarged screen. On wider
+  fine-pointer desktops it keeps pointer-events: none, so the existing
+  per-card hotspots and the existing instruction popup behave exactly as
+  before. The trigger stays keyboard focusable at every width.
+- The dialog reuses @radix-ui/react-dialog (already a dependency) for the
+  focus trap, Escape dismissal, outside-click dismissal, scroll lock and
+  aria-hidden handling. No new dependency was added.
+- The five channels are defined once in contactChannels and reused by the
+  existing mobile fallback list and the dialog, so destinations cannot
+  drift. Email and phone share mailtoHref/telHref; location uses the same
+  Google Maps URL; GitHub and LinkedIn use data/links.ts.
+- The screen mirrors the image: paper-plane mark, "Let's Connect"
+  heading, three cards on the left and two on the right above 560px, the
+  same labels/details/icons, and a bottom wave motif.
+- Opening: 0.42s scale/fade with the project ease. Closing: 0.24s reverse
+  animation; Radix waits for the exit animation before unmounting.
+- Mobile-first sizing: width min(43rem, 100vw - 1.5rem), max-height
+  min(88svh, 44rem), internal scroll, overscroll containment, safe-area
+  bottom padding and no horizontal overflow.
+
+12.4 Opening interaction
+- Tap/click the laptop display: pointer event on the trigger, tip closed,
+  dialog opened.
+- Desktop keyboard: Tab to "Open enlarged laptop screen with contact
+  links", press Enter. The trigger has a visible 2px emerald focus ring.
+- Opening moves focus to the Close button inside the dialog.
+
+12.5 Closing interactions
+- Dedicated Close button.
+- Backdrop click/tap.
+- Escape key.
+- Focus returns to the laptop trigger after every close path.
+- Clicking a channel does not close the dialog first; the destination is
+  opened and the dialog remains until the user dismisses it.
+
+12.6 Contact links tested
+- Email: mailto:uvijayaragavan03@gmail.com with the existing subject.
+- Phone: tel:+918667834495.
+- Location: Google Maps search for Tamil Nadu, India.
+- GitHub: https://github.com/vijayaragavan-dev (opened in a new tab with
+  noopener noreferrer during the test).
+- LinkedIn: https://www.linkedin.com/in/vijaya-ragavan-ki10052007.
+All five resolve to the same destinations used by the existing image
+hotspots.
+
+12.7 Desktop verification (1366 x 900)
+- The section renders with the same portrait, laptop, instruction bubble,
+  copy buttons and résumé button; the only markup addition is the
+  transparent trigger, which is not painted.
+- elementFromPoint over a card still returns the existing hotspot anchor;
+  the trigger reports pointer-events: none.
+- Clicking the GitHub hotspot opened the GitHub profile and did not open
+  the dialog.
+- Keyboard Enter on the focused trigger opened the dialog with
+  aria-modal="true", role="dialog", an accessible title and description.
+- Tab cycled Close -> five links -> Close and never left the dialog.
+- Escape and the Close button both closed it and restored focus to the
+  trigger.
+- Reduced-motion emulation: dialog and overlay animation names were none,
+  link transition duration 0s, and the dialog closed immediately.
+
+12.8 Mobile verification
+Tested with Playwright touch contexts (390x844 and 360x740, isMobile,
+deviceScaleFactor 2) and CDP touch taps.
+- The on-image trigger measured 157x102 CSS px at 390 wide (auto pointer
+  events) and aligned with the laptop display in a debug outline
+  screenshot.
+- Tapping the laptop opened the dialog; all five links were fully visible
+  without scrolling at 390x844.
+- Each link measured 58px high and 326px wide at 390, comfortably above
+  the 44px touch minimum. The close button measured 44x44.
+- Close button, backdrop tap and Escape all closed the dialog.
+- Body scroll locked while open; a wheel scroll after dismissal moved the
+  page normally (scrollY 9162 -> 9396).
+- Tapping the GitHub card opened a new tab with the correct URL and the
+  dialog stayed open.
+- No horizontal overflow at any mobile width.
+
+12.9 Responsive test results
+Popup opened and measured at 360x740, 375x812, 390x844, 430x932,
+768x1024, 1024x768, 1366x900, 1920x1080 and 740x360 landscape.
+- All dialog boxes stayed inside the viewport and scrollWidth never
+  exceeded innerWidth.
+- Widths: 336px at 360, 366px at 390, 688px at 768 and above.
+- Heights: 548px at 360, 535px at 390, 515px at 430, 402px at 768+.
+- Links: 58px high at every size; 296px wide at 360 and 268px in the
+  desktop two-column layout.
+- The 740x360 landscape viewport used the internal scroll (85px range);
+  the LinkedIn card was fully reachable after scrolling.
+- A 1024-wide touch context reported pointer: coarse and opened the popup
+  from a tap; the equivalent fine-pointer desktop keeps the hotspots.
+
+12.10 Console and requests
+- Fresh load plus open/close interactions: 0 console errors.
+- The only warning was the pre-existing ScrollTrigger static-container
+  warning.
+- No failed network requests were recorded during the final pass.
+
+12.11 MCP and tools used
+- Playwright MCP (browser_run_code_unsafe, console_messages) for all
+  browser, touch, keyboard, responsive and reduced-motion checks and for
+  screenshots.
+- Local shell for typecheck, lint, git status and the report append.
+- No Context7 or other external service was needed; the existing local
+  Radix Dialog conventions were reused.
+
+12.12 Remaining limitations
+- Physical iOS/Android hardware was not available; safe-area padding and
+  touch behaviour were verified through device emulation only.
+- Actual email-client and dialer launches depend on the device; the
+  mailto:/tel: destinations were validated by their resolved hrefs, and
+  the external GitHub link was verified by opening it in a new tab.
+- The portrait keeps its existing slow float, so the tap area moves about
+  7px; the trigger is far larger than that movement and no mis-taps were
+  observed.
+- The dialog is offered on coarse-pointer devices and up to 1024px wide by
+  design; wider fine-pointer desktops keep the original direct hotspots,
+  with the keyboard route available.
+
+12.13 Final status
+The Contact section keeps its original structure, portrait, laptop image,
+cards and destinations. The only addition is the enlarged, responsive,
+accessible laptop screen for touch users. typecheck and lint pass, the
+working tree contains only the three intended source changes, and no
+dependency was added.
