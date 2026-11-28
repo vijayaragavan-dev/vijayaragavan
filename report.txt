@@ -765,3 +765,293 @@ cards and destinations. The only addition is the enlarged, responsive,
 accessible laptop screen for touch users. typecheck and lint pass, the
 working tree contains only the three intended source changes, and no
 dependency was added.
+
+================================================================
+13. SKILLS SCENE — PREMIUM SLOW AUTONOMOUS ROTATION
+    (2026-11-26, sixth session)
+================================================================
+
+13.1 Objective
+Make the existing 3D Skills environment feel alive with slow, cinematic
+motion while leaving its design, geometry, camera, layout, interactions
+and performance characteristics intact.
+
+13.2 Files modified
+- components/three/SkillConstellation.tsx
+- components/ui/TechUniverse.tsx
+- app/globals.css
+No other source file, data file, dependency or configuration was changed.
+The working tree contained no prior uncommitted work when this task began.
+
+13.3 Implementation — left constellation (React Three Fiber)
+- The existing DragController is still the only rotation owner. No second
+  renderer or animation loop was added.
+- An autonomous horizontal rotation is accumulated in the same useFrame
+  callback that already applied drag inertia. Rotation is frame-time based
+  (radians per second), not frame-count based.
+- Speed: 0.024 rad/s on the full tier (about 1.38 deg/s, one revolution in
+  about 262 s) and 0.017 rad/s on the lite tier (about 0.97 deg/s, one
+  revolution in about 370 s). Both sit inside the requested range.
+- The rotation eases in over roughly 1 s once idle and eases out quickly
+  when a drag begins, so there is no sudden acceleration or jerk.
+- Only the horizontal axis is autonomous. The user's manual vertical tilt
+  is never altered, and camera position, fov, fit scale, node geometry,
+  colours, lights and labels are untouched.
+- Existing inertia was preserved and made refresh-rate independent by
+  scaling the stored per-move values by 60 fps and decaying exponentially
+  per second. The feel of a flick is unchanged.
+
+13.4 Manual interaction priority
+- Pointer down or pointer move on the constellation sets the idle weight to
+  zero immediately and resets the idle timer.
+- Releasing the pointer preserves the manual orientation exactly; the scene
+  does not snap or reset.
+- After 2.4 s of stillness the autonomous rotation eases back in from the
+  user's current angle. Selecting nodes and switching categories are also
+  treated as interaction because they begin with a pointer press or key.
+- Measured desktop behaviour: holding the pointer still for 900 ms produced
+  0.0000 rad of change with idle weight 0; a 140 px drag produced 0.520 rad
+  of manual rotation; after release the scene kept that angle (0.565 rad
+  away from the starting angle, no snap) and resumed at 0.0177 rad/s while
+  ramping, reaching 0.0227 rad/s at full idle weight.
+
+13.5 Implementation — right technology panel (CSS 3D)
+- A new compositor-only wrapper (.tech-universe-idle) sits between the
+  existing parallax layer and the existing manual-orbit layer. It applies a
+  very slow sway of about +/-2.4 deg yaw and +/-0.4 deg pitch over 46 s with
+  a negative animation delay so the scene starts mid-phase.
+- Because it is a separate ancestor transform, it composes with the
+  existing pointer parallax and manual --wx/--wy orbit values instead of
+  modifying them. Object layout, depth, selection and drag rotations are
+  unchanged.
+- The sway is paused with animation-play-state on pointer down, object drag,
+  keyboard rotation, reset, while the panel is off screen, and while the tab
+  is hidden. Pausing freezes the phase, so the motion resumes from exactly
+  where it stopped. It restarts 2.4 s after the last interaction.
+
+13.6 Existing interactions verified
+- Dragging the constellation, releasing it and letting inertia settle:
+  works, then autonomous rotation resumes.
+- Selecting all seven constellation nodes by pointer: each click selected
+  the matching node and updated the tab, panel heading and screen-reader
+  announcement (Programming, Frontend, Backend, Database, CS Fundamentals,
+  AI/ML, Generative & Agentic AI).
+- Switching all seven category tabs: every panel heading and technology
+  object count matched, and the panel transition returned to idle.
+- Right panel orbit drag changed --wy to 28.8 deg and --wx to -7.0 deg,
+  then the Reset button restored --wy 0 deg and --wx -4 deg.
+- Object drag changed an artifact from rx -22 / ry 26 to rx -17.7 / ry 38.5;
+  Reset restored the layout rotation. Object selection toggled aria-pressed
+  and the live readout for every artifact.
+- Keyboard category navigation with ArrowRight moved focus and selection
+  through Frontend, Backend and Database. Arrow keys on an artifact still
+  rotate it under reduced motion.
+- Mobile touch: vertical swipe over the stage scrolled the page, horizontal
+  swipe orbited it, and tapping artifacts selected them. No interaction was
+  blocked by the new motion.
+
+13.7 Responsive results
+Checked at 360x740, 375x812, 390x844, 430x932, 768x1024, 1024x768,
+1366x900 and 1920x1080.
+- document.scrollWidth never exceeded innerWidth; no horizontal overflow.
+- Every technology object stayed inside the stage bounds at every width.
+- Section height was unchanged between samples 0.9 s apart, so the added
+  motion causes no layout shift.
+- The two-column layout starts at 1024 px as before; below that the scene
+  and panel stack exactly as before.
+- At 390x844 the touch/lite path measured 0.0161 rad/s instead of 0.024,
+  and touch drag still paused then resumed rotation (0.015 rad/s while
+  ramping). No mobile-specific disabling was introduced.
+- Screenshots: audit-skills-1366.png, audit-skills-768.png,
+  audit-skills-1920.png, audit-skills-mobile-390.png,
+  audit-skills-mobile-stage-390.png and the rotation comparison
+  audit-final-skills-t0.png / audit-final-skills-t9.png. After 9 s the
+  constellation had visibly advanced while every node and label stayed in
+  frame, confirming the composition is stable throughout the cycle.
+
+13.8 Reduced motion and visibility
+- prefers-reduced-motion: the autonomous weight is forced to zero, so the
+  scene stays at its initial 0.12 rad orientation. The scene was unchanged
+  over 2.2 s, and two canvas screenshots taken 3 s apart after settling were
+  byte-identical (same SHA-256).
+- Under reduced motion the .tech-universe-idle, tech-object-float,
+  tech-object-drift and tech-object-entry animations are disabled and the
+  world transition duration is 0 s. Keyboard artifact rotation still works
+  (ArrowRight moved an artifact from 24 deg to 36 deg).
+- Scrolling the Skills section out of view froze the constellation rotation
+  completely (0.00000 rad change over 2 s while away).
+- Simulating document.hidden / visibilitychange froze rotation at 0.2105 rad
+  for 1.5 s and paused the panel sway; restoring visibility resumed both.
+- The canvas frameloop already switches to "never" when the section is not
+  active, so off-screen motion costs no GPU frames.
+
+13.9 Performance and cleanup
+- Reused the existing R3F loop and the existing CSS transform pipeline.
+  There is no additional requestAnimationFrame loop, no second WebGL
+  renderer and no per-frame React state update.
+- The panel sway is a single compositor transform; it is paused off screen
+  and on hidden tabs. The only JS additions are attribute writes on user
+  interaction and one 2.4 s timer, which is cleared on unmount and before
+  being re-armed.
+- Frame-time clamping (delta <= 50 ms) prevents a long frame or a paused
+  scene from producing a jump when it resumes.
+- Verified no new runtime dependency: only three source files changed.
+- npm run typecheck and npm run lint both pass.
+- Headless Chromium frame pacing was not usable as a benchmark (it varied
+  from 8 to 22 fps between runs, including with reduced motion and with the
+  WebGL canvas hidden, because the headless page is occluded/software
+  rendered). No performance claim is based on those numbers; the added
+  work is constant per frame and adds no draw calls.
+
+13.10 Console and network
+- Fresh load plus drag, category switching, node selection, object drag,
+  reset, touch and reduced-motion passes: 0 console errors and 0 failed
+  requests.
+- Warnings are the pre-existing ScrollTrigger static-container warning, the
+  THREE.Clock deprecation notice, and the motion.dev reduced-motion notice
+  under emulation. No new warnings were introduced.
+
+13.11 MCP and tools used
+- Playwright MCP (browser_run_code_unsafe plus console logging) for every
+  browser, touch, keyboard, responsive, reduced-motion and visibility check,
+  including screenshots and hash comparison.
+- Local PowerShell for typecheck, lint, git status/diff and screenshot hash
+  checks.
+- Context7 was not required: the change uses the project's existing
+  @react-three/fiber useFrame API and CSS transforms, whose current usage is
+  already established in the codebase. No packages were installed.
+
+13.12 Measurement note
+The precise rotation figures in 13.4 and 13.7 were read from a temporary,
+development-only data attribute written by the existing frame loop. That
+probe was removed before final verification because the project's React
+Compiler lint rules forbid mutating the renderer from useFrame. The motion
+logic itself is unchanged after removal; final verification used the
+regression suite above plus screenshots, frozen-scene hashes and the
+single-pass code review.
+
+13.13 Remaining limitations
+- No physical phone, tablet or laptop hardware was available; responsive
+  and touch checks used Playwright device emulation with CDP touch events.
+- Headless software rendering cannot represent real GPU frame rate, so
+  smoothness on low-end hardware was reasoned from the architecture rather
+  than benchmarked on device.
+- CSS sway amplitude is intentionally tiny; on very wide screens the
+  selected group's objects move by only a few pixels, which is the intended
+  premium, non-distracting effect.
+- Devices classified as no-3d (save-data, no WebGL, 2 or fewer cores) keep
+  their existing list fallback and receive no autonomous rotation by design.
+
+13.14 Final status
+The Skills constellation now rotates slowly and continuously, pauses for
+manual control, and eases back in without snapping. The right technology
+panel gained a complementary idle sway that never fights its manual orbit.
+Camera, geometry, colours, typography, layout, selection, reset, keyboard
+and touch behaviour are preserved. Only the three Skills-related source
+files were changed, plus this append-only report; nothing was committed or
+pushed and no unrelated section was modified.
+
+================================================================
+14. SKILLS ROTATION — FULL-CYCLE READABILITY AUDIT AND CORRECTION
+    (2026-11-26/28, follow-up to section 13)
+================================================================
+
+14.1 Why section 13 was not good enough
+Section 13 shipped a continuous, unbounded 360-degree yaw. A follow-up
+check forced the scene through fixed angles and found a real defect: the
+constellation is a nearly flat ring (all NODE_POSITIONS sit at z between
+-0.35 and +0.35), so a yaw of about 90 degrees turns it edge-on. The nodes
+collapse into a vertical line, the labels collide and the composition is
+unreadable. Evidence: audit-yaw-090.png (about 85 degrees), with
+audit-yaw-125.png and audit-yaw-170.png showing the ring recovering.
+At 61 degrees the "UI - INTERFACE" label already touches the core
+(audit-arc-p052.png); at 40-46 degrees the ring is still clean
+(audit-arc-m040.png, audit-arc-p036.png). A continuous 360-degree pass
+would hit the broken state every quarter turn, so it was replaced.
+
+14.2 Final motion
+- The autonomous component is a bounded sine arc added to the user's
+  horizontal angle: autoYaw = sin(phase) * 0.32 rad (about +/-18.3 deg).
+- Peak arc speed stays the tuned value: 0.030 rad/s on the full tier and
+  0.024 rad/s on the lite tier. Mean absolute speed over a cycle is
+  0.019 rad/s (1.09 deg/s) and 0.015 rad/s (0.88 deg/s) respectively.
+- Period is 67.0 s on full (33.5 s each way) and 83.8 s on lite. The scene
+  eases to a stop at each end and reverses, so there is never a jump.
+- Everything else from section 13 is unchanged: the same useFrame loop,
+  the 2.4 s idle delay, 0.95 s ease-in and 0.18 s ease-out, the manual
+  angle preserved on release, the 50 ms delta clamp, reduced-motion
+  handling, tab-visibility handling and the right-panel CSS sway.
+- The manual yaw range is untouched. If a user deliberately parks the ring
+  near the edge-on band, it stays their choice exactly as before; the
+  autonomous arc no longer sweeps through that band on its own.
+
+14.3 Measured on the final build
+A temporary development-only probe (dataset attributes written every
+0.2 s from the existing frame loop, removed again afterwards) produced:
+- Amplitude: measured max +18.33 deg, matching the 0.32 rad constant.
+- Desktop interaction: holding the pointer still for 1.4 s left the yaw at
+  0.088 rad exactly (idle weight 0). A 140 px drag added 0.56 rad, the
+  release kept that orientation (no snap back; the pre-existing flick
+  inertia continues briefly), and after 3.6 s / 6.1 s the weight was
+  0.714 / 0.963 with the yaw advancing again.
+- Off screen: with the section scrolled out of view the phase stayed at
+  0.4898 rad for 2 s (completely frozen).
+- Reduced motion, fresh profile: totalYaw 0.12 rad exactly, phase 0,
+  weight 0, unchanged across 2.5 s; .tech-universe-idle animation name
+  "none" and the world transition 0 s.
+- Lite tier, 390 x 844 touch context at DPR 2: measured phase rate
+  0.0738 rad/s against the 0.075 design value (1.6 percent low), peak yaw
+  rate 0.0236 rad/s; the arc reached its +18.3 deg limit. A 48 px touch
+  drag added 0.193 rad with weight 0 and the phase frozen for a 1 s hold,
+  then resumed (weight 0.398 after 3 s). scrollWidth 390 = innerWidth 390,
+  canvas 349 x 459.
+- Desktop wall-clock rates in headless Chromium are not usable as a
+  benchmark: software rendering ran at 10-17 fps and the 50 ms delta clamp
+  then integrates less than real time. The mobile run above, which stayed
+  above the clamp, matches the design value. On a normal display the phase
+  rate is 0.09375 rad/s (full) or 0.075 rad/s (lite).
+
+14.4 Interaction and regression checks on the final build
+- All seven constellation nodes were clicked at their live projected
+  positions while the arc was running; each selected the matching group
+  (Programming, Frontend, Backend, Database, CS Fundamentals, AI/ML,
+  Generative & Agentic AI), updated the tab, the panel heading and the
+  aria-live announcement, with exactly one node in the selected state.
+- All seven category tabs still produce the correct headings and object
+  counts (5, 3, 3, 5, 9, 4, 8) and return the panel to idle; ArrowRight
+  keeps focus on the tab and advances the selection.
+- Leaving the pointer parked on the canvas for 54 s (most of a full arc)
+  did not change the selection: the rotation alone never fires the
+  hover-select handler, so no accidental category changes occur.
+- Visual: audit-final-arc-start.png, audit-final-arc-plus.png (t +17 s)
+  and audit-final-arc-minus.png (t +52 s) show the arc in both directions
+  with every node and label separated; audit-arc-extreme-pos.png and
+  audit-arc-extreme-neg.png show the +/-18 deg ends. The right panel,
+  object layout, tabs, view toggle and list view are visually unchanged.
+- Real browser (Chrome through clawdcursor, 1656 x 978, GPU): the ring
+  angle advanced visibly between the load frame and the t +18 s frame,
+  manual drag rotated it, and the right panel's idle sway was running.
+- Console/network on a clean load: 0 errors, 0 failed requests; only the
+  pre-existing ScrollTrigger static-container and THREE.Clock warnings.
+- One intermediate hot reload logged 183 "debugClock is not defined"
+  errors while the probe was being removed in two edits; a clean reload of
+  the final code produced 0 errors. Those entries are an HMR artefact, not
+  a state of the committed source.
+- typecheck and lint both pass on the final source, and no dependency was
+  added.
+
+14.5 Remaining limitation
+Because the constellation is flat, no continuous 360-degree yaw can avoid
+the edge-on collapse. The bounded arc is the deliberate compromise: it
+reads as a slow, premium drift (about 1.1 deg/s average) with a gentle
+reversal at each end, and it keeps the default composition readable for
+the whole cycle. A user who drags to roughly 80-100 degrees will still see
+the flat ring edge-on, exactly as they could before this change.
+
+14.6 Working tree note
+`references/Vijayaragavan — 3D Portfolio Visual Blueprint.html` shows as
+deleted in the working tree. The project owner confirmed this deletion was
+intentional, so the file stays deleted and was not restored. The changes
+made here are limited to app/globals.css,
+components/three/SkillConstellation.tsx, components/ui/TechUniverse.tsx and
+this append-only report. Nothing was committed or pushed.

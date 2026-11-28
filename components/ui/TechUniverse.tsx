@@ -211,6 +211,37 @@ export default function TechUniverse({ group }: TechUniverseProps) {
     parallax.style.setProperty("--py", `${parallaxState.current.y}deg`);
   }, []);
 
+  // The idle sway is a compositor-only CSS animation; pausing it keeps the
+  // current phase, so it resumes exactly where it stopped instead of snapping.
+  const idleTimerRef = useRef<number | null>(null);
+
+  const pauseIdleMotion = useCallback(() => {
+    if (idleTimerRef.current !== null) {
+      window.clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+    stageRef.current?.setAttribute("data-idle-paused", "true");
+  }, []);
+
+  const scheduleIdleMotion = useCallback(() => {
+    if (idleTimerRef.current !== null) {
+      window.clearTimeout(idleTimerRef.current);
+    }
+    idleTimerRef.current = window.setTimeout(() => {
+      idleTimerRef.current = null;
+      stageRef.current?.removeAttribute("data-idle-paused");
+    }, 2400);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (idleTimerRef.current !== null) {
+        window.clearTimeout(idleTimerRef.current);
+      }
+    },
+    [],
+  );
+
   // Swap the rendered group behind a short exit transition so the old
   // objects leave before the new constellation arrives.
   useEffect(() => {
@@ -355,7 +386,14 @@ export default function TechUniverse({ group }: TechUniverseProps) {
     applyParallax();
 
     layout.forEach((_, index) => resetObject(index));
-  }, [applyOrbit, applyParallax, layout, resetObject]);
+    scheduleIdleMotion();
+  }, [
+    applyOrbit,
+    applyParallax,
+    layout,
+    resetObject,
+    scheduleIdleMotion,
+  ]);
 
   const startOrbitInertia = useCallback(() => {
     const orbit = orbitRef.current;
@@ -384,6 +422,7 @@ export default function TechUniverse({ group }: TechUniverseProps) {
     event: ReactPointerEvent<HTMLDivElement>,
   ) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
+    pauseIdleMotion();
 
     const orbit = orbitRef.current;
     if (orbit.raf) {
@@ -450,6 +489,7 @@ export default function TechUniverse({ group }: TechUniverseProps) {
 
     orbit.active = false;
     event.currentTarget.releasePointerCapture?.(event.pointerId);
+    scheduleIdleMotion();
 
     if (reducedMotion) {
       event.currentTarget.removeAttribute("data-orbiting");
@@ -472,6 +512,7 @@ export default function TechUniverse({ group }: TechUniverseProps) {
       orbit.raf = null;
     }
     event.currentTarget.removeAttribute("data-orbiting");
+    scheduleIdleMotion();
   };
 
   const handleStagePointerLeave = () => {
@@ -489,6 +530,7 @@ export default function TechUniverse({ group }: TechUniverseProps) {
   ) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     event.stopPropagation();
+    pauseIdleMotion();
 
     const rotation = rotationsRef.current[index];
     if (!rotation) return;
@@ -553,6 +595,7 @@ export default function TechUniverse({ group }: TechUniverseProps) {
     drag.active = false;
     event.currentTarget.dataset.dragging = "false";
     event.currentTarget.releasePointerCapture?.(event.pointerId);
+    scheduleIdleMotion();
 
     if (drag.moved > 6) {
       lastDragAtRef.current = event.timeStamp;
@@ -569,6 +612,7 @@ export default function TechUniverse({ group }: TechUniverseProps) {
     drag.active = false;
     event.currentTarget.dataset.dragging = "false";
     event.currentTarget.removeAttribute("data-dragging");
+    scheduleIdleMotion();
   };
 
   const handleObjectClick = (
@@ -586,6 +630,7 @@ export default function TechUniverse({ group }: TechUniverseProps) {
   ) => {
     event.stopPropagation();
     resetObject(index);
+    scheduleIdleMotion();
   };
 
   const handleObjectKeyDown = (
@@ -626,6 +671,8 @@ export default function TechUniverse({ group }: TechUniverseProps) {
     rotation.rx = clamp(rotation.rx, -58, 58);
     button.style.setProperty("--rx", `${rotation.rx}deg`);
     button.style.setProperty("--ry", `${rotation.ry}deg`);
+    pauseIdleMotion();
+    scheduleIdleMotion();
   };
 
   const selectedSkill =
@@ -690,102 +737,116 @@ export default function TechUniverse({ group }: TechUniverseProps) {
         </div>
 
         <div ref={parallaxRef} className="tech-universe-parallax">
-          <div ref={worldRef} className="tech-universe-world">
-            {renderGroup.skills.map((skill, index) => {
-              const item = layout[index];
-              if (!item) return null;
+          <div className="tech-universe-idle">
+            <div ref={worldRef} className="tech-universe-world">
+              {renderGroup.skills.map((skill, index) => {
+                const item = layout[index];
+                if (!item) return null;
 
-              const color = techBrandColor(skill.icon) ?? accentHex;
-              const wide = techMarkIsWide(skill.icon);
-              const selected = selectedIndex === index;
+                const color = techBrandColor(skill.icon) ?? accentHex;
+                const wide = techMarkIsWide(skill.icon);
+                const selected = selectedIndex === index;
 
-              return (
-                <div
-                  key={`${renderGroup.id}-${skill.name}`}
-                  className="tech-object"
-                  data-selected={selected ? "true" : undefined}
-                  data-wide={wide ? "true" : undefined}
-                  data-learning={skill.learning ? "true" : undefined}
-                  data-label={item.y > 64 ? "top" : "bottom"}
-                  style={
-                    {
-                      "--x": item.x,
-                      "--y": item.y,
-                      "--z": item.z,
-                      "--scale": item.scale,
-                      "--i": index,
-                      "--rx": `${item.rx}deg`,
-                      "--ry": `${item.ry}deg`,
-                      "--rz": `${item.rz}deg`,
-                      "--mark-size": markSize,
-                      "--float-duration": `${item.duration}s`,
-                      "--float-delay": `${item.delay}s`,
-                      "--drift-duration": `${(item.duration * 2.2).toFixed(2)}s`,
-                      "--tech-color": color,
-                    } as CssVars
-                  }
-                >
-                  <div className="tech-object-entry">
-                    <div className="tech-object-float">
-                      <span
-                        className="tech-object-aura"
-                        aria-hidden="true"
-                      />
-                      <span
-                        className="tech-object-ring"
-                        aria-hidden="true"
-                      />
-                      <span
-                        className="tech-object-pool"
-                        aria-hidden="true"
-                      />
+                return (
+                  <div
+                    key={`${renderGroup.id}-${skill.name}`}
+                    className="tech-object"
+                    data-selected={selected ? "true" : undefined}
+                    data-wide={wide ? "true" : undefined}
+                    data-learning={skill.learning ? "true" : undefined}
+                    data-label={item.y > 64 ? "top" : "bottom"}
+                    style={
+                      {
+                        "--x": item.x,
+                        "--y": item.y,
+                        "--z": item.z,
+                        "--scale": item.scale,
+                        "--i": index,
+                        "--rx": `${item.rx}deg`,
+                        "--ry": `${item.ry}deg`,
+                        "--rz": `${item.rz}deg`,
+                        "--mark-size": markSize,
+                        "--float-duration": `${item.duration}s`,
+                        "--float-delay": `${item.delay}s`,
+                        "--drift-duration": `${(item.duration * 2.2).toFixed(2)}s`,
+                        "--tech-color": color,
+                      } as CssVars
+                    }
+                  >
+                    <div className="tech-object-entry">
+                      <div className="tech-object-float">
+                        <span
+                          className="tech-object-aura"
+                          aria-hidden="true"
+                        />
+                        <span
+                          className="tech-object-ring"
+                          aria-hidden="true"
+                        />
+                        <span
+                          className="tech-object-pool"
+                          aria-hidden="true"
+                        />
 
-                      <div className="tech-object-drift">
-                        <button
-                          ref={(node) => {
-                            buttonRefs.current[index] = node;
-                            if (!node) return;
-                            const rotation = rotationsRef.current[index];
-                            if (!rotation) return;
-                            node.style.setProperty("--rx", `${rotation.rx}deg`);
-                            node.style.setProperty("--ry", `${rotation.ry}deg`);
-                          }}
-                          type="button"
-                          className="tech-object-button"
-                          data-index={index}
-                          data-learning={skill.learning ? "true" : undefined}
-                          aria-pressed={selected}
-                          aria-label={`${skill.name}${
-                            skill.learning ? " — learning" : ""
-                          }`}
-                          title={`${skill.name} — drag to rotate, double-click to reset`}
-                          onClick={(event) => handleObjectClick(event, index)}
-                          onDoubleClick={(event) =>
-                            handleObjectDoubleClick(event, index)
-                          }
-                          onKeyDown={(event) =>
-                            handleObjectKeyDown(event, index)
-                          }
-                          onPointerDown={(event) =>
-                            handleObjectPointerDown(event, index)
-                          }
-                          onPointerMove={handleObjectPointerMove}
-                          onPointerUp={handleObjectPointerUp}
-                          onPointerCancel={handleObjectPointerCancel}
-                        >
-                          <span className="tech-object-visual">
-                            {[4, 3, 2, 1].map((depth) => (
+                        <div className="tech-object-drift">
+                          <button
+                            ref={(node) => {
+                              buttonRefs.current[index] = node;
+                              if (!node) return;
+                              const rotation = rotationsRef.current[index];
+                              if (!rotation) return;
+                              node.style.setProperty("--rx", `${rotation.rx}deg`);
+                              node.style.setProperty("--ry", `${rotation.ry}deg`);
+                            }}
+                            type="button"
+                            className="tech-object-button"
+                            data-index={index}
+                            data-learning={skill.learning ? "true" : undefined}
+                            aria-pressed={selected}
+                            aria-label={`${skill.name}${
+                              skill.learning ? " — learning" : ""
+                            }`}
+                            title={`${skill.name} — drag to rotate, double-click to reset`}
+                            onClick={(event) => handleObjectClick(event, index)}
+                            onDoubleClick={(event) =>
+                              handleObjectDoubleClick(event, index)
+                            }
+                            onKeyDown={(event) =>
+                              handleObjectKeyDown(event, index)
+                            }
+                            onPointerDown={(event) =>
+                              handleObjectPointerDown(event, index)
+                            }
+                            onPointerMove={handleObjectPointerMove}
+                            onPointerUp={handleObjectPointerUp}
+                            onPointerCancel={handleObjectPointerCancel}
+                          >
+                            <span className="tech-object-visual">
+                              {[4, 3, 2, 1].map((depth) => (
+                                <span
+                                  key={depth}
+                                  className="tech-object-layer"
+                                  style={
+                                    {
+                                      "--depth": depth,
+                                      filter: `brightness(${
+                                        0.18 + (4 - depth) * 0.07
+                                      })`,
+                                    } as CssVars
+                                  }
+                                  aria-hidden="true"
+                                >
+                                  <TechIcon
+                                    iconId={skill.icon}
+                                    name={skill.name}
+                                    bare
+                                    decorative
+                                    className="tech-object-mark"
+                                  />
+                                </span>
+                              ))}
                               <span
-                                key={depth}
-                                className="tech-object-layer"
-                                style={
-                                  {
-                                    "--depth": depth,
-                                    filter: `brightness(${
-                                      0.18 + (4 - depth) * 0.07
-                                    })`,
-                                  } as CssVars
-                                }
+                                className="tech-object-edge"
                                 aria-hidden="true"
                               >
                                 <TechIcon
@@ -796,46 +857,34 @@ export default function TechUniverse({ group }: TechUniverseProps) {
                                   className="tech-object-mark"
                                 />
                               </span>
-                            ))}
-                            <span
-                              className="tech-object-edge"
-                              aria-hidden="true"
-                            >
-                              <TechIcon
-                                iconId={skill.icon}
-                                name={skill.name}
-                                bare
-                                decorative
-                                className="tech-object-mark"
-                              />
+                              <span
+                                className="tech-object-face"
+                                aria-hidden="true"
+                              >
+                                <TechIcon
+                                  iconId={skill.icon}
+                                  name={skill.name}
+                                  bare
+                                  decorative
+                                  className="tech-object-mark"
+                                />
+                              </span>
                             </span>
-                            <span
-                              className="tech-object-face"
-                              aria-hidden="true"
-                            >
-                              <TechIcon
-                                iconId={skill.icon}
-                                name={skill.name}
-                                bare
-                                decorative
-                                className="tech-object-mark"
-                              />
-                            </span>
-                          </span>
-                        </button>
-                      </div>
+                          </button>
+                        </div>
 
-                      <span
-                        className="tech-object-label"
-                        aria-hidden="true"
-                      >
-                        {skill.name}
-                      </span>
+                        <span
+                          className="tech-object-label"
+                          aria-hidden="true"
+                        >
+                          {skill.name}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
+                );
             })}
+            </div>
           </div>
         </div>
       </div>

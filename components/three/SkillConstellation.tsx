@@ -11,7 +11,10 @@ import { Line } from "@react-three/drei";
 import * as THREE from "three";
 import ParticleField from "./ParticleField";
 import { useDocumentVisible } from "@/hooks/useDocumentVisible";
-import { prefersReducedMotion } from "@/hooks/useReducedMotion";
+import {
+  prefersReducedMotion,
+  useReducedMotionPreference,
+} from "@/hooks/useReducedMotion";
 import { skillGroups } from "@/data/skills";
 import type { DeviceTier } from "@/lib/device-capabilities";
 
@@ -42,6 +45,24 @@ type DragState = {
   dragging: boolean;
   moved: number;
 };
+
+/** Seconds of stillness before the autonomous rotation eases back in. */
+const IDLE_RESUME_DELAY = 2.4;
+/** Time constants for easing the autonomous rotation in and out. */
+const IDLE_EASE_IN = 0.95;
+const IDLE_EASE_OUT = 0.18;
+/** Inertia decay per second, matched to the previous per-frame feel. */
+const INERTIA_DECAY = 3.7;
+/**
+ * The constellation is a nearly flat ring. A full 360 deg yaw would turn it
+ * edge-on every quarter turn, collapsing the nodes and colliding the labels,
+ * so the autonomous pass drifts through a bounded arc instead. The manual
+ * drag range is unchanged, and this amplitude keeps the default composition
+ * (plus the usual ~20 deg of manual offset) inside the range that stays
+ * readable; only a deliberately extreme manual angle can reach the edge-on
+ * band, exactly as it could before this change.
+ */
+const AUTO_YAW_AMPLITUDE = 0.32;
 
 function Core() {
   const core = useRef<THREE.Group>(null);
@@ -393,16 +414,23 @@ function OrbitalNode({
 function DragController({
   group,
   dragState,
+  speed,
+  reducedMotion,
 }: {
   group: React.RefObject<THREE.Group | null>;
   dragState: React.RefObject<DragState>;
+  speed: number;
+  reducedMotion: boolean;
 }) {
   const { gl } = useThree();
   const rotation = useRef({
     x: -0.04,
     y: 0.12,
+    autoPhase: 0,
     velocityX: 0,
     velocityY: 0,
+    idleWeight: 0,
+    lastInteraction: Number.NEGATIVE_INFINITY,
   });
 
   useEffect(() => {
@@ -414,6 +442,7 @@ function DragController({
       if (event.pointerType === "mouse" && event.button !== 0) return;
       dragState.current.dragging = true;
       dragState.current.moved = 0;
+      rotation.current.lastInteraction = performance.now() / 1000;
       lastX = event.clientX;
       lastY = event.clientY;
       rotation.current.velocityX = 0;
@@ -429,6 +458,7 @@ function DragController({
       lastY = event.clientY;
 
       dragState.current.moved += Math.abs(dx) + Math.abs(dy);
+      rotation.current.lastInteraction = performance.now() / 1000;
 
       if (Math.abs(dx) >= Math.abs(dy)) {
         rotation.current.y += dx * 0.004;
@@ -446,6 +476,7 @@ function DragController({
     const handleUp = () => {
       if (!dragState.current.dragging) return;
       dragState.current.dragging = false;
+      rotation.current.lastInteraction = performance.now() / 1000;
     };
 
     canvas.addEventListener("pointerdown", handleDown);
@@ -464,21 +495,40 @@ function DragController({
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
     const state = rotation.current;
+    const dragging = dragState.current.dragging;
 
-    if (!dragState.current.dragging) {
-      const drift = prefersReducedMotion() ? 0 : dt * 0.014;
-      state.y += state.velocityY + drift;
+    // The autonomous rotation only applies to the horizontal axis, so the
+    // user's tilt and the existing composition are never altered.
+    const now = performance.now() / 1000;
+    const idleFor = now - state.lastInteraction;
+    const idleTarget =
+      !dragging && !reducedMotion && idleFor >= IDLE_RESUME_DELAY ? 1 : 0;
+    const ease = idleTarget > state.idleWeight ? IDLE_EASE_IN : IDLE_EASE_OUT;
+    state.idleWeight +=
+      (idleTarget - state.idleWeight) * (1 - Math.exp(-dt / ease));
+
+    const autoAngularSpeed = speed / AUTO_YAW_AMPLITUDE;
+    state.autoPhase += autoAngularSpeed * state.idleWeight * dt;
+    const autoYaw = Math.sin(state.autoPhase) * AUTO_YAW_AMPLITUDE;
+
+    if (!dragging) {
+      // Frame-time based so the drift and inertia feel identical at any
+      // refresh rate; the previous per-frame values are scaled by 60fps.
+      state.y += state.velocityY * 60 * dt;
       state.x = THREE.MathUtils.clamp(
-        state.x + state.velocityX,
+        state.x + state.velocityX * 60 * dt,
         -0.38,
         0.38,
       );
-      state.velocityY *= 0.94;
-      state.velocityX *= 0.92;
+      const decay = Math.exp(-INERTIA_DECAY * dt);
+      state.velocityY *= decay;
+      state.velocityX *= decay;
+    } else {
+      state.idleWeight = 0;
     }
 
     if (group.current) {
-      group.current.rotation.set(state.x, state.y, 0);
+      group.current.rotation.set(state.x, state.y + autoYaw, 0);
     }
   });
 
@@ -488,9 +538,13 @@ function DragController({
 function Constellation({
   selectedIndex,
   onSelect,
+  speed,
+  reducedMotion,
 }: {
   selectedIndex: number;
   onSelect: (index: number) => void;
+  speed: number;
+  reducedMotion: boolean;
 }) {
   const group = useRef<THREE.Group>(null);
   const dragState = useRef<DragState>({ dragging: false, moved: 0 });
@@ -516,7 +570,12 @@ function Constellation({
       <directionalLight position={[4, 5, 7]} intensity={1.1} color="#d8fff5" />
       <pointLight position={[4.5, 3.5, 6]} intensity={22} color="#8b7cff" distance={20} decay={2} />
       <pointLight position={[-4.5, -2.5, 5]} intensity={20} color="#34e0a1" distance={20} decay={2} />
-      <DragController group={group} dragState={dragState} />
+      <DragController
+        group={group}
+        dragState={dragState}
+        speed={speed}
+        reducedMotion={reducedMotion}
+      />
 
       <group scale={fitScale}>
       <group ref={group}>
@@ -600,6 +659,10 @@ export default function SkillConstellation({
   active = true,
 }: SkillConstellationProps) {
   const visible = useDocumentVisible();
+  const reducedMotion = useReducedMotionPreference();
+  // Peak arc speed in rad/s. Slow enough to read as a living scene, never as
+  // a carousel; the lighter tier is a touch slower so small screens stay calm.
+  const rotationSpeed = tier === "full" ? 0.03 : 0.024;
 
   const handleCreated = ({ gl }: RootState) => {
     gl.domElement.addEventListener(
@@ -627,7 +690,12 @@ export default function SkillConstellation({
       onCreated={handleCreated}
       className="drag-surface"
     >
-      <Constellation selectedIndex={selectedIndex} onSelect={onSelect} />
+      <Constellation
+        selectedIndex={selectedIndex}
+        onSelect={onSelect}
+        speed={rotationSpeed}
+        reducedMotion={reducedMotion}
+      />
     </Canvas>
   );
 }

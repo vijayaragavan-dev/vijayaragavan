@@ -760,6 +760,24 @@ h6 {
   transition: transform 0.45s var(--ease-soft);
 }
 
+/* A very slow idle sway gives the panel life without touching the manual
+   orbit values. It runs on the compositor and pauses in place. */
+.tech-universe-idle {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+  animation: tech-universe-idle 46s ease-in-out infinite alternate;
+  animation-delay: -18s;
+  will-change: transform;
+}
+
+.tech-universe-stage[data-orbiting="true"] .tech-universe-idle,
+.tech-universe-stage[data-idle-paused="true"] .tech-universe-idle,
+.tech-universe-stage[data-active="false"] .tech-universe-idle {
+  animation-play-state: paused;
+}
+
 .tech-universe-stage[data-orbiting="true"] .tech-universe-world {
   transition: none;
 }
@@ -1131,6 +1149,15 @@ h6 {
   }
   to {
     transform: rotateY(3deg) rotateX(-1deg);
+  }
+}
+
+@keyframes tech-universe-idle {
+  from {
+    transform: rotateY(-2.4deg) rotateX(0.4deg);
+  }
+  to {
+    transform: rotateY(2.4deg) rotateX(-0.4deg);
   }
 }
 
@@ -2476,6 +2503,7 @@ h6 {
   .tech-object-float,
   .tech-object-drift,
   .tech-object-entry,
+  .tech-universe-idle,
   .tech-object[data-selected="true"] .tech-object-ring,
   .contact-float,
   .contact-tip,
